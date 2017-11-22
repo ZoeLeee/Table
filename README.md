@@ -1,6 +1,6 @@
-# tpls
+# web-table
 
-> A Vue.js project
+> 可编辑的表格，支持移动拖拽
 
 ## Build Setup
 
