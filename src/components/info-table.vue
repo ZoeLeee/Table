@@ -21,7 +21,7 @@
         <button @click="onexport" id="export-table" class="btn btn-default">导出</button>
       </div>
       <div id="out-table" v-if="headerData[value]">
-        <!-- <ul class="list-unstyled list-inline" >
+        <ul class="list-unstyled list-inline" >
           <li v-for="(item,index) in pageHead" :key="item.id">
             <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
             <input type="text" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
@@ -30,8 +30,8 @@
           <li>
             <button class="btn btn-primary" @click="addHeadItem">+</button>
           </li>
-        </ul> -->
-        <table>
+        </ul>
+        <!-- <table>
           <tr style="word-wrap:break-word;word-break:break-all">
             <td style="word-wrap:break-word;word-break:break-all;width:33%;white-space:nowrap" v-for="(item,index) in pageHead" :key="item.id">
               <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
@@ -42,7 +42,7 @@
               <button class="btn btn-primary" @click="addHeadItem">+</button>
             </td>
           </tr>
-        </table>
+        </table> -->
         <table class="table table-bordered">
           <thead ref="tHead">
             <tr>
