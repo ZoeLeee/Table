@@ -32,7 +32,7 @@
             </td>
           </tr>
         </table> -->
-        <table class="table table-bordered" ref="content">
+        <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}">
           <thead ref="tHead">
             <tr>
               <template v-for="(item,key) in headerData[value]">        
@@ -85,13 +85,7 @@
         </div>
         <div>
           <el-collapse v-model="activeNames">
-            <el-collapse-item title="格式设置" name="1" class="setting">
-              <form action="">
-                <label for="">字体大小:</label>
-                <el-input-number v-model="settingData[value].fontSize" :min="0" size="small" label="字体大小"></el-input-number>
-              </form>
-            </el-collapse-item>
-            <el-collapse-item  name="2">
+            <el-collapse-item  name="1"  class="setting">
               <template slot="title">
                 {{settingPanelTitle}}
               </template>
@@ -104,6 +98,33 @@
                 </el-option>
               </el-select>
             </el-collapse-item>
+            <el-collapse-item title="格式设置" name="2">
+              <div>
+                <label for="">字体大小:</label>
+                <el-input-number v-model="settingData[value].fontSize" :min="0" size="small" label="字体大小"></el-input-number>
+              </div>
+              <div>
+                <label for="">边框:</label>
+                <el-switch
+                  v-model="settingData[value].isBorder"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  :active-value="true"
+                  :inactive-value="false">
+                </el-switch>
+              </div>
+              <div>
+                <label for="">条纹:</label>
+                <el-switch
+                  v-model="settingData[value].isstriped"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                  :active-value="true"
+                  :inactive-value="false">
+                </el-switch>
+              </div>
+            </el-collapse-item>
+            
           </el-collapse>
           <el-button type="primary">立即添加</el-button>
           <el-button>取消</el-button>
@@ -124,11 +145,15 @@
         settingData:{
           'offerData':{
             fontSize:14, //字体大小
-            headValue:""
+            headValue:"",
+            isBorder:true,
+            isstriped:false
           },
           'offerData1':{
             fontSize:14, //字体大小
-            headValue:""
+            headValue:"",
+            isBorder:true,
+            isstriped:false
           }
         }, 
         //切换手风琴列表
