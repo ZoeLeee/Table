@@ -1,5 +1,5 @@
 <template>
-  <el-row :style="{ fontSize: fontSize + 'px' }"> 
+  <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }"> 
     <el-col :span="18">
       <div>
         <button @click="editHeader($event)" class="btn btn-primary">编辑</button>
@@ -8,13 +8,13 @@
       </div>
       <div id="out-table" v-if="headerData[value]">
         <ul class="list-unstyled list-inline pageItem" >
-          <li v-for="(item,index) in pageHead" :key="item.id">
+          <li v-for="(item,index) in pageHead[value]" :key="item.id">
             <button type="button" class="close" aria-label="Close" v-if="item.isEdit" @click="delItem(index)">
               <span aria-hidden="true">&times;</span>
             </button> 
             <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
             <input type="text" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
-            <input type="text" v-model="pageHeadContent[index].name">    
+            <input type="text" v-model="pageHeadContent[value][index].name">    
           </li>
           <li>
             <button class="btn btn-primary" @click="addHeadItem">+</button>
@@ -74,7 +74,7 @@
     <el-col :span="6">
       <el-card class="box-card" body-style="{ padding: 30px }">
         <div slot="header" class="clearfix">
-          <el-select v-model="value" placeholder="请选择" @change="onSelect" ref="selectedItem">
+          <el-select v-model="value" placeholder="请选择" @change="onTableSelect" ref="selectedItem">
             <el-option ref="selectedItem"
               v-for="item in options"
               :key="item.index"
@@ -88,13 +88,21 @@
             <el-collapse-item title="格式设置" name="1" class="setting">
               <form action="">
                 <label for="">字体大小:</label>
-                <el-input-number v-model="fontSize" :min="0" size="small" label="字体大小"></el-input-number>
+                <el-input-number v-model="settingData[value].fontSize" :min="0" size="small" label="字体大小"></el-input-number>
               </form>
             </el-collapse-item>
             <el-collapse-item  name="2">
               <template slot="title">
                 {{settingPanelTitle}}
               </template>
+              <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
+                <el-option
+                  v-for="(item,key) in headerData[value]"
+                  :key="item.id"
+                  :label="item"
+                  :value="key">
+                </el-option>
+              </el-select>
             </el-collapse-item>
           </el-collapse>
           <el-button type="primary">立即添加</el-button>
@@ -112,7 +120,17 @@
   export default {
     data() {
       return {
-        fontSize:14, //字体大小
+
+        settingData:{
+          'offerData':{
+            fontSize:14, //字体大小
+            headValue:""
+          },
+          'offerData1':{
+            fontSize:14, //字体大小
+            headValue:""
+          }
+        }, 
         //切换手风琴列表
         activeNames: ['1'],
         // 设置面板标题
@@ -273,49 +291,93 @@
           ]
         },
         //页头部分
-        pageHead:[
-          {
-            name:"订单号：",
-            isEdit:false
-          },
-          {
-            name:"客户名称：",
-            isEdit:false
-          },
-          {
-            name:"销售日期：",
-            isEdit:false
-          },
-          {
-            name:"联系人：",
-            isEdit:false
-          },
-          {
-            name:"联系地址：",
-            isEdit:false
-          }
-        ],
+        pageHead:{
+          "offerData":[
+            {
+              name:"订单号：",
+              isEdit:false
+            },
+            {
+              name:"客户名称：",
+              isEdit:false
+            },
+            {
+              name:"销售日期：",
+              isEdit:false
+            },
+            {
+              name:"联系人：",
+              isEdit:false
+            },
+            {
+              name:"联系地址：",
+              isEdit:false
+            }
+          ],
+          "offerData1":[
+            {
+              name:"订单号1：",
+              isEdit:false
+            },
+            {
+              name:"客户名称1：",
+              isEdit:false
+            },
+            {
+              name:"销售日期1：",
+              isEdit:false
+            },
+            {
+              name:"联系人1：",
+              isEdit:false
+            },
+            {
+              name:"联系地址1：",
+              isEdit:false
+            }
+          ]
+        },
         // 页头部分内容
-        pageHeadContent:[
-          {
-            name:""
-          },
-          {
-            name:""
-          },
-          {
-            name:""
+        pageHeadContent:{
+          "offerData":[
+            {
+              name:"1231312313"
+            },
+            {
+              name:"zoe"
+            },
+            {
+              name:"2017-10-21"
 
-          },
-          {
-            name:""
+            },
+            {
+              name:"joe"
 
-          },
-          {
-            name:""
+            },
+            {
+              name:"beijibng"
+            }
+          ],
+          "offerData1":[
+            {
+              name:"2231312313"
+            },
+            {
+              name:"zoe1"
+            },
+            {
+              name:"2017-10-21"
 
-          }
-        ],
+            },
+            {
+              name:"joe11"
+
+            },
+            {
+              name:"beijibng111"
+            }
+          ]
+        },
         options: {
           'offerData':{
             value: 'offerData',
@@ -326,16 +388,22 @@
             label: '报价明细单1'
           }
         },
-        value: ''
+        value: 'offerData' //选择的表格
+
 
       };
     },
     methods: {
-     onSelect(){
-      //  console.log(this.options[this.value]['label']);
-       this.settingPanelTitle=this.options[this.value]['label'];
-     },
-     //编辑头部
+      // 选择表格
+      onTableSelect(){ 
+        this.settingPanelTitle=this.options[this.value]['label'];
+      },
+      //选择表头项
+      onTheadSelect(){
+        console.log(this.settingData[this.value].headValue);
+      },
+
+      //编辑头部
       editHeader(e){
         if(this.isEdit){
           e.target.innerHTML="保存"
@@ -344,10 +412,10 @@
         }
         this.isEdit=!this.isEdit;
       },
-     //新增列
+      //新增列
       addCol(){
         // this.headerData.push({newCol:"新项"});
-       this.$set(this.headerData[this.value], 'newCol'+this.col++, "新列")
+        this.$set(this.headerData[this.value], 'newCol'+this.col++, "新列")
       },
       //删除列
       delCol(key){
@@ -356,7 +424,7 @@
           this.$delete(data,key);
         } 
       },
-     //导出表格
+      //导出表格
       onexport(evt){
         let wb=XLSX.utils.table_to_book(document.getElementById("out-table"));
       
@@ -376,7 +444,7 @@
           for(var i=0;i!=s.length;++i) buf[i] =s.charCodeAt(i) & 0xFF;
           return buf;
         }
-         
+          
       },
       // 拖拽列函数
       dragCol(){
@@ -455,8 +523,10 @@
       },
       //增加页头项
       addHeadItem(){
-        console.log(123);
-        this.pageHead.push({name:"新项",isEdit:false});
+        // console.log(this.pageHead);
+        this.pageHead[this.value].push({name:"新项:",isEdit:false});
+        this.pageHeadContent[this.value].push({name:""});
+        // console.log(this.pageHead);
       },
       // 删除页头项
       delItem(i){
@@ -478,7 +548,7 @@
         //因为与拖拽的事件冲突，改变宽度目标元素放在tbody行上
         let tr=table.rows[1];  
         for (let j = 0; j < tr.cells.length; j++) {  
-       
+        
           tr.cells[j].onmousedown = function () {   
             //记录单元格  
             tTD = this;   
@@ -514,7 +584,7 @@
               for (j = 0; j < table.rows.length-1; j++) {  
                 table.rows[j].cells[tTD.cellIndex].width = tTD.width;   
               }   
-             
+              
             }   
           };   
         }   
@@ -522,7 +592,7 @@
     },
     mounted(){
       this.caclTotal();
-      
+      this.onTableSelect();
     },
     updated(){
       //改变表头位置
