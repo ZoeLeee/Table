@@ -32,7 +32,7 @@
             </td>
           </tr>
         </table> -->
-        <table class="table table-bordered">
+        <table class="table table-bordered" ref="content">
           <thead ref="tHead">
             <tr>
               <template v-for="(item,key) in headerData[value]">        
@@ -48,7 +48,7 @@
           </thead>
           <tbody ref="tbody">
             <tr v-for="data in allData[value]" :key="data.id">
-              <td v-for="item in data" :key="item.id" draggable="true">{{item}}</td>
+              <td v-for="item in data" :key="item.id">{{item}}</td>
             </tr>
           </tbody>
           <tfoot v-if="allData[value]">
@@ -97,7 +97,7 @@
               </template>
             </el-collapse-item>
           </el-collapse>
-          <el-button type="primary" @click="onSubmit">立即添加</el-button>
+          <el-button type="primary">立即添加</el-button>
           <el-button>取消</el-button>
         </div>
       </el-card>
@@ -470,17 +470,66 @@
             this.totalPrice+=data.total;
           }
         }
+      },
+      //拖动改变表格宽度
+      changeColWidth(){
+        let tTD={}; //用来存储当前更改宽度的Table Cell   
+        let table = this.$refs.content;
+        //因为与拖拽的事件冲突，改变宽度目标元素放在tbody行上
+        let tr=table.rows[1];  
+        for (let j = 0; j < tr.cells.length; j++) {  
+       
+          tr.cells[j].onmousedown = function () {   
+            //记录单元格  
+            tTD = this;   
+            if (event.offsetX > tTD.offsetWidth - 10) {   
+              tTD.mouseDown = true;   
+              tTD.oldX = event.x;   
+              tTD.oldWidth = tTD.offsetWidth;   
+            }    
+          };   
+          tr.cells[j].onmouseup = function () {   
+            //结束宽度调整   
+            if (tTD == undefined) tTD = this;   
+            tTD.mouseDown = false;   
+            tTD.style.cursor = 'default';   
+          };   
+          tr.cells[j].onmousemove = function () {   
+            //更改鼠标样式   
+            if (event.offsetX > this.offsetWidth - 10)   
+              this.style.cursor = 'col-resize';   
+            else   
+              this.style.cursor = 'default';   
+            //取出暂存的Table Cell   
+            if (tTD == undefined) tTD = this;   
+            //调整宽度   
+            if (tTD.mouseDown) {   
+              tTD.style.cursor = 'default';   
+              if (tTD.oldWidth + (event.x - tTD.oldX)>0)  
+                tTD.width = tTD.oldWidth + (event.x - tTD.oldX);   
+              //调整列宽   
+              tTD.style.width = tTD.width;   
+              tTD.style.cursor = 'col-resize';   
+              //调整该列中的每个Cell 
+              for (j = 0; j < table.rows.length-1; j++) {  
+                table.rows[j].cells[tTD.cellIndex].width = tTD.width;   
+              }   
+             
+            }   
+          };   
+        }   
       }
-
-
     },
     mounted(){
       this.caclTotal();
       
     },
     updated(){
+      //改变表头位置
       this.dragCol();
       // console.log(this.pageHeadContent);
+      //改变表头宽度
+      this.changeColWidth();
     }
   }
 </script>
