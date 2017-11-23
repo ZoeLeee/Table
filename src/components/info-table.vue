@@ -57,7 +57,7 @@
                 合计
               </td>
               <td :colspan="Object.keys(headerData[value]).length-1">
-                <span>¥{{totalPrice}}</span>
+                <span>¥{{settingData[value].totalPrice}}</span>
               </td>
             </tr> 
           </tfoot> 
@@ -65,7 +65,7 @@
         <table>
           <tr>
             <td align="right">
-              合计：<span>¥{{totalPrice}}</span>
+              合计：<span>¥{{settingData[value].totalPrice}}</span>
             </td>
           </tr>    
         </table>
@@ -147,13 +147,16 @@
             fontSize:14, //字体大小
             headValue:"",
             isBorder:true,
-            isstriped:false
+            isstriped:false,
+            totalPrice:0//总额
+
           },
           'offerData1':{
             fontSize:14, //字体大小
             headValue:"",
             isBorder:true,
-            isstriped:false
+            isstriped:false,
+            totalPrice:0
           }
         }, 
         //切换手风琴列表
@@ -196,7 +199,7 @@
               spec:"sasd",
               unit:"sadad",
               count:"12",
-              unitPrice:"14522",
+              unitPrice:"145",
               total:"",
               cardNum:5,
               comments:"大师大师多撒好低"
@@ -206,7 +209,7 @@
               spec:"sasd",
               unit:"sadad",
               count:"12",
-              unitPrice:"14522",
+              unitPrice:"522",
               total:"",
               cardNum:5,
               comments:"大师大师多撒好低"
@@ -216,7 +219,7 @@
               spec:"sasd",
               unit:"sadad",
               count:"12",
-              unitPrice:"14522",
+              unitPrice:"142",
               total:"",
               cardNum:5,
               comments:"大师大师多撒好低"
@@ -226,7 +229,7 @@
               spec:"sasd",
               unit:"sadad",
               count:"12",
-              unitPrice:"14522",
+              unitPrice:"22",
               total:"",
               cardNum:5,
               comments:"大师大师多撒好低"
@@ -236,7 +239,7 @@
               spec:"sasd",
               unit:"sadad",
               count:"12",
-              unitPrice:"14522",
+              unitPrice:"222",
               total:"",
               cardNum:5,
               comments:"大师大师多撒好低"
@@ -246,7 +249,7 @@
               spec:"sasd",
               unit:"sadad",
               count:"12",
-              unitPrice:"14522",
+              unitPrice:"322",
               total:"",
               cardNum:5,
               comments:"大师大师多撒好低"
@@ -559,10 +562,11 @@
       },
       // 计算总额
       caclTotal(){
-        for(let  key in this.allData){
+        for(let key in this.allData){
           for(let data of this.allData[key]){
             data.total=data.unitPrice*data.count;
-            this.totalPrice+=data.total;
+            // console.log(data.total);
+            this.settingData[key].totalPrice+=parseFloat(data.total);
           }
         }
       },
@@ -622,7 +626,6 @@
     updated(){
       //改变表头位置
       this.dragCol();
-      // console.log(this.pageHeadContent);
       //改变表头宽度
       this.changeColWidth();
     }
