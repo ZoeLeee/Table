@@ -1,31 +1,20 @@
 <template>
-  <el-row>
-    <el-col :span="24">
-      <el-card class="box-card">
-        <div slot="header" class="clearfix">
-          <el-select v-model="value" placeholder="请选择" @change="onSelect">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value">
-            </el-option>
-          </el-select>
-        </div>
-      </el-card>
-    </el-col>
-    <el-col :span="24">
-      <div v-if="headerData[value]">
+  <el-row :style="{ fontSize: fontSize + 'px' }"> 
+    <el-col :span="18">
+      <div>
         <button @click="editHeader($event)" class="btn btn-primary">编辑</button>
         <button @click="addCol" class="btn btn-default">新增</button>
         <button @click="onexport" id="export-table" class="btn btn-default">导出</button>
       </div>
       <div id="out-table" v-if="headerData[value]">
-        <ul class="list-unstyled list-inline" >
+        <ul class="list-unstyled list-inline pageItem" >
           <li v-for="(item,index) in pageHead" :key="item.id">
+            <button type="button" class="close" aria-label="Close" v-if="item.isEdit" @click="delItem(index)">
+              <span aria-hidden="true">&times;</span>
+            </button> 
             <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
             <input type="text" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
-            <input type="text">
+            <input type="text" v-model="pageHeadContent[index].name">    
           </li>
           <li>
             <button class="btn btn-primary" @click="addHeadItem">+</button>
@@ -47,14 +36,12 @@
           <thead ref="tHead">
             <tr>
               <template v-for="(item,key) in headerData[value]">        
-                <th  v-if="isEdit" :key="item.id" draggable="true">
-                  <span>{{item}}</span>  
-                </th>
-                <th v-if="!isEdit" :key="item.id">  
-                  <input type="text" v-model="headerData[value][key]" >
-                  <button type="button" class="close" aria-label="Close" @click="delCol(key)">
+                <th   :key="item.id" draggable="true">
+                  <span v-if="isEdit">{{item}}</span> 
+                  <input type="text" v-model="headerData[value][key]" v-if="!isEdit">
+                  <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
                     <span aria-hidden="true">&times;</span>
-                  </button>
+                  </button> 
                 </th>
               </template>
             </tr>
@@ -83,6 +70,37 @@
           </tr>    
         </table>
       </div>
+    </el-col>
+    <el-col :span="6">
+      <el-card class="box-card" body-style="{ padding: 30px }">
+        <div slot="header" class="clearfix">
+          <el-select v-model="value" placeholder="请选择" @change="onSelect" ref="selectedItem">
+            <el-option ref="selectedItem"
+              v-for="item in options"
+              :key="item.index"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </div>
+        <div>
+          <el-collapse v-model="activeNames">
+            <el-collapse-item title="格式设置" name="1" class="setting">
+              <form action="">
+                <label for="">字体大小:</label>
+                <el-input-number v-model="fontSize" :min="0" size="small" label="字体大小"></el-input-number>
+              </form>
+            </el-collapse-item>
+            <el-collapse-item  name="2">
+              <template slot="title">
+                {{settingPanelTitle}}
+              </template>
+            </el-collapse-item>
+          </el-collapse>
+          <el-button type="primary" @click="onSubmit">立即添加</el-button>
+          <el-button>取消</el-button>
+        </div>
+      </el-card>
     </el-col> 
   </el-row>
 </template>
@@ -94,6 +112,11 @@
   export default {
     data() {
       return {
+        fontSize:14, //字体大小
+        //切换手风琴列表
+        activeNames: ['1'],
+        // 设置面板标题
+        settingPanelTitle:"",
         col:1,
         // 是否编辑
         isEdit:true,
@@ -272,23 +295,45 @@
             isEdit:false
           }
         ],
-        options: [
+        // 页头部分内容
+        pageHeadContent:[
           {
+            name:""
+          },
+          {
+            name:""
+          },
+          {
+            name:""
+
+          },
+          {
+            name:""
+
+          },
+          {
+            name:""
+
+          }
+        ],
+        options: {
+          'offerData':{
             value: 'offerData',
             label: '报价明细单'
           }, 
-          {
+          'offerData1':{
             value: 'offerData1',
             label: '报价明细单1'
           }
-        ],
+        },
         value: ''
 
       };
     },
     methods: {
      onSelect(){
-       
+      //  console.log(this.options[this.value]['label']);
+       this.settingPanelTitle=this.options[this.value]['label'];
      },
      //编辑头部
       editHeader(e){
@@ -309,8 +354,7 @@
         this.$delete(this.headerData[this.value],key);
         for(let data of this.allData[this.value]){
           this.$delete(data,key);
-        }
-        
+        } 
       },
      //导出表格
       onexport(evt){
@@ -365,9 +409,9 @@
                 if(th.cellIndex == i){   
                   //拿起元素和要被放置的元素下标一致，交换位置,判断往前还是往后
                   if(th.cellIndex>_t.cellIndex){
-                    e.target.parentNode.insertBefore(th,_t);
+                    th.parentNode.insertBefore(th,_t);
                   }else{
-                    e.target.parentNode.insertBefore(th,_t.nextElementSibling);
+                    th.parentNode.insertBefore(th,_t.nextElementSibling);
                   }
                 }  
             } 
@@ -414,6 +458,10 @@
         console.log(123);
         this.pageHead.push({name:"新项",isEdit:false});
       },
+      // 删除页头项
+      delItem(i){
+        this.pageHead.splice(i,1);
+      },
       // 计算总额
       caclTotal(){
         for(let  key in this.allData){
@@ -432,11 +480,15 @@
     },
     updated(){
       this.dragCol();
+      // console.log(this.pageHeadContent);
     }
   }
 </script>
 
 <style scoped>
+ 
+
+/* 表格样式 start */
   table{
     table-layout: fixed;
     margin-top: 3rem;
@@ -458,8 +510,26 @@
   #out-table{
     margin-top:5rem; 
   }
+/* 表格样式 end */
+/* 表头定制项样式 start*/
   #out-table li{
     width: 30%;
     margin-top:2rem; 
+    position: relative;
   }
+  #out-table .pageItem li .close {
+    float: none;
+    position: absolute;
+    top:-14px;
+    left:-8px;
+  }
+/* 表头定制项样式 end*/
+
+/* 设置面板样式 start */
+  .setting label{
+    font-size: 1.45rem;
+    font-weight: normal;
+  }
+
+
 </style>
