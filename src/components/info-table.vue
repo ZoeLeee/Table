@@ -129,8 +129,13 @@
                 </el-select>
                 <div class="show-rules">
                   <label for="">大于</label>
-                  <el-input-number size="mini" v-model="gtRefValue" :min="0" label="参考值"></el-input-number>
+                  <el-input-number size="mini" v-model="gtRefValue" :min="0" label="大于参考值"></el-input-number>
                   <el-color-picker v-model="settingData[value].gtBGColor"></el-color-picker>
+                </div>
+                <div class="show-rules">
+                  <label for="">小于</label>
+                  <el-input-number size="mini" v-model="ltRefValue" :min="0" label="小于参考值"></el-input-number>
+                  <el-color-picker v-model="settingData[value].ltBGColor"></el-color-picker>
                 </div>
                 <el-button type="primary" @click="addShowRules">添加规则</el-button>
               </el-collapse-item>
@@ -168,10 +173,12 @@
       return {
         selectedIndex:"",//选择的列下标
         gtRefValue:0, //参考值 大于时
+        ltRefValue:0,
         newColName:"",
         settingData:{
           'offerData':{
-            gtBGColor:"red",
+            ltBGColor:"#13ce66",
+            gtBGColor:"#ff4949",
             fontSize:14, //字体大小
             headValue:"",
             isBorder:true,
@@ -180,7 +187,8 @@
 
           },
           'offerData1':{
-            gtBGColor:"red",
+            ltBGColor:"#13ce66",
+            gtBGColor:"#ff4949",
             fontSize:14, //字体大小
             headValue:"",
             isBorder:true,
@@ -444,13 +452,14 @@
           }
         },
         value: 'offerData' //选择的表格
-        
-
       };
     },
     watch:{
-      headerData(val){
-        console.log(123);
+      headerData:{
+        handler:function(val,oldValue){
+          // console.log(val,oldValue)
+        },
+        deep:true
       }
     },
     methods: {
@@ -460,13 +469,13 @@
       },
       //选择表头项
       onTheadSelect(){
-        console.log(this.settingData[this.value].headValue);
+      // console.log(this.settingData[this.value].headValue);
         //被选中的表项
         this.selectedIndex=this.settingData[this.value].headValue;
       },
       // 筛选高亮方法
-      showRules(index,refValueBig,gtBGColor){
-
+      showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
+        // console.log(ltBGColor);
         //所选中的表项在第几列
         let colIndex=Object.keys(this.allData[this.value][0]).indexOf(index);
         // console.log(colIndex);
@@ -475,16 +484,23 @@
           selectedData.push(data[index]);
         }
         // console.log(selectedData);
-
         for(let i in selectedData){
-          if(parseFloat(selectedData[i])>refValueBig){
+          
+          if(parseFloat(selectedData[i])>refValueBig && refValueBig !==0){
+     
             this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
+          } 
+          // console.log(parseFloat(selectedData[i])<refValueSm);
+          if(parseFloat(selectedData[i])<refValueSm && refValueSm !==0){
+            // console.log(ltBGColor);
+            this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
           }
         }
         // console.log(this.$refs.tbody.rows[1].cells[colIndex]);
       },
       addShowRules(){
-        this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor); 
+       
+        this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor,this.ltRefValue,this.settingData[this.value].ltBGColor); 
       },
       //编辑头部
       editHeader(e){
@@ -518,7 +534,7 @@
               selectedData.push(data[this.selectedIndex]);
             }
             let allData=this.allData[this.value]
-            console.log(selectedData);
+            // console.log(selectedData);
             for(let index in allData){
               this.$set(allData[index],key,selectedData[index])
             }
