@@ -2,8 +2,8 @@
   <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }"> 
     <el-col :span="18">
       <div>
-        <button @click="editHeader($event)" class="btn btn-primary">编辑</button>
-        <button @click="addCol" class="btn btn-default">新增</button>
+        <button @click="editHeader($event)" @keyup.enter="editHeader" class="btn btn-primary">编辑</button>
+        <button @click="addCol('新列')" class="btn btn-default">新增</button>
         <button @click="onexport" id="export-table" class="btn btn-default">导出</button>
       </div>
       <div id="out-table" v-if="headerData[value]">
@@ -39,7 +39,7 @@
           <thead ref="tHead">
             <tr>
               <template v-for="(item,key) in headerData[value]">        
-                <th   :key="item.id" draggable="true">
+                <th :key="item.id" draggable="true">
                   <span v-if="isEdit">{{item}}</span> 
                   <input type="text" v-model="headerData[value][key]" v-if="!isEdit">
                   <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
@@ -136,8 +136,16 @@
               </el-collapse-item>
               <el-collapse-item title="添加列" name="3">
                 
-                <el-input placeholder="请输入内容" v-model="newColName" class="input-with-select">
-                  
+                <el-input placeholder="请输入内容" v-model="newColName" >
+                  <el-select  slot="prepend" v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect" style="width:130px">
+                    <el-option label="空列" :value="0"></el-option>
+                  <el-option
+                    v-for="(item,key) in headerData[value]"
+                    :key="item.id"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select>
                   <el-button slot="append" icon="el-icon-plus" @click="addCol(newColName)"></el-button>
                 </el-input>
               </el-collapse-item>
@@ -440,6 +448,11 @@
 
       };
     },
+    watch:{
+      headerData(val){
+        console.log(123);
+      }
+    },
     methods: {
       // 选择表格
       onTableSelect(){ 
@@ -447,12 +460,12 @@
       },
       //选择表头项
       onTheadSelect(){
-        // console.log(this.settingData[this.value].headValue);
+        console.log(this.settingData[this.value].headValue);
         //被选中的表项
         this.selectedIndex=this.settingData[this.value].headValue;
       },
       // 筛选高亮方法
-      showRules(index,refValueBigm,gtBGColor){
+      showRules(index,refValueBig,gtBGColor){
 
         //所选中的表项在第几列
         let colIndex=Object.keys(this.allData[this.value][0]).indexOf(index);
@@ -485,12 +498,35 @@
       //新增列
       addCol(colName){
         // this.headerData.push({newCol:"新项"});
-        if(colName){
-
-        }else{
-          this.$set(this.headerData[this.value], 'newCol'+this.col++, "新列")
-        }
-        
+          let key='newCol'+ this.col++;
+          // console.log(key);
+          if(!colName)
+            if(this.selectedIndex){
+              // console.log(this.selectedIndex);
+              colName=this.headerData[this.value][this.selectedIndex];
+            }
+            else
+              colName="新列";
+          this.$set(this.headerData[this.value],key , colName)
+          //所选中的表项在第几列
+          if(this.selectedIndex){
+            
+            let colIndex=Object.keys(this.allData[this.value][0]).indexOf(this.selectedIndex);
+            // console.log(colIndex);
+            let selectedData=[];
+            for(let data of this.allData[this.value]){
+              selectedData.push(data[this.selectedIndex]);
+            }
+            let allData=this.allData[this.value]
+            console.log(selectedData);
+            for(let index in allData){
+              this.$set(allData[index],key,selectedData[index])
+            }
+          }else{
+            for(let index in this.allData[this.value]){
+              this.$set(this.allData[this.value][index],key,"")
+            }
+          }
       },
       //删除列
       delCol(key){
@@ -679,7 +715,9 @@
       this.dragCol();
       //改变表头宽度
       this.changeColWidth();
+  
     }
+    
   }
 </script>
 
@@ -688,6 +726,7 @@
   h1{
     text-align: center
   }
+
 /* 表格样式 start */
   table{
     table-layout: fixed;
@@ -738,5 +777,7 @@
   .show-rules{
     margin:2rem;
   }
-
+  .el-input-group__prepend {
+    width: auto;
+  }
 </style>
