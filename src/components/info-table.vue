@@ -7,6 +7,9 @@
         <button @click="onexport" id="export-table" class="btn btn-default">导出</button>
       </div>
       <div id="out-table" v-if="headerData[value]">
+        <h1>
+          {{settingPanelTitle}}
+        </h1>
         <ul class="list-unstyled list-inline pageItem" >
           <li v-for="(item,index) in pageHead[value]" :key="item.id">
             <button type="button" class="close" aria-label="Close" v-if="item.isEdit" @click="delItem(index)">
@@ -32,7 +35,7 @@
             </td>
           </tr>
         </table> -->
-        <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}">
+        <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}" id="mainTable">
           <thead ref="tHead">
             <tr>
               <template v-for="(item,key) in headerData[value]">        
@@ -83,52 +86,66 @@
             </el-option>
           </el-select>
         </div>
-        <div>
-          <el-collapse v-model="activeNames">
-            <el-collapse-item  name="1"  class="setting">
-              <template slot="title">
-                {{settingPanelTitle}}
-              </template>
-              <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
-                <el-option
-                  v-for="(item,key) in headerData[value]"
-                  :key="item.id"
-                  :label="item"
-                  :value="key">
-                </el-option>
-              </el-select>
-            </el-collapse-item>
-            <el-collapse-item title="格式设置" name="2">
-              <div>
-                <label for="">字体大小:</label>
-                <el-input-number v-model="settingData[value].fontSize" :min="0" size="small" label="字体大小"></el-input-number>
-              </div>
-              <div>
-                <label for="">边框:</label>
-                <el-switch
-                  v-model="settingData[value].isBorder"
-                  active-color="#13ce66"
-                  inactive-color="#ff4949"
-                  :active-value="true"
-                  :inactive-value="false">
-                </el-switch>
-              </div>
-              <div>
-                <label for="">条纹:</label>
-                <el-switch
-                  v-model="settingData[value].isstriped"
-                  active-color="#13ce66"
-                  inactive-color="#ff4949"
-                  :active-value="true"
-                  :inactive-value="false">
-                </el-switch>
-              </div>
-            </el-collapse-item>
-            
-          </el-collapse>
-          <el-button type="primary">立即添加</el-button>
-          <el-button>取消</el-button>
-        </div>
+        <el-card>
+          <div slot="header" class="clearfix">
+            {{settingPanelTitle}}
+          </div>
+          <div id="setting">
+            <el-collapse v-model="activeNames" >
+              <el-collapse-item title="格式设置" name="1">
+                <div>
+                  <label for="">字体大小:</label>
+                  <el-input-number v-model="settingData[value].fontSize" :min="0" size="small" label="字体大小"></el-input-number>
+                </div>
+                <div>
+                  <label for="">边框:</label>
+                  <el-switch
+                    v-model="settingData[value].isBorder"
+                    active-color="#13ce66"
+                    inactive-color="#ff4949"
+                    :active-value="true"
+                    :inactive-value="false">
+                  </el-switch>
+                </div>
+                <div>
+                  <label for="">条纹:</label>
+                  <el-switch
+                    v-model="settingData[value].isstriped"
+                    active-color="#13ce66"
+                    inactive-color="#ff4949"
+                    :active-value="true"
+                    :inactive-value="false">
+                  </el-switch>
+                </div>
+              </el-collapse-item>
+              <el-collapse-item title="显示设置" name="2"> 
+                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
+                  <el-option
+                    v-for="(item,key) in headerData[value]"
+                    :key="item.id"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select>
+                <div class="show-rules">
+                  <label for="">大于</label>
+                  <el-input-number size="mini" v-model="gtRefValue" :min="0" label="参考值"></el-input-number>
+                  <el-color-picker v-model="settingData[value].gtBGColor"></el-color-picker>
+                </div>
+                <el-button type="primary" @click="addShowRules">添加规则</el-button>
+              </el-collapse-item>
+              <el-collapse-item title="添加列" name="3">
+                
+                <el-input placeholder="请输入内容" v-model="newColName" class="input-with-select">
+                  
+                  <el-button slot="append" icon="el-icon-plus" @click="addCol(newColName)"></el-button>
+                </el-input>
+              </el-collapse-item>
+            </el-collapse>
+          
+          </div>
+        </el-card>
+        
       </el-card>
     </el-col> 
   </el-row>
@@ -141,9 +158,12 @@
   export default {
     data() {
       return {
-
+        selectedIndex:"",//选择的列下标
+        gtRefValue:0, //参考值 大于时
+        newColName:"",
         settingData:{
           'offerData':{
+            gtBGColor:"red",
             fontSize:14, //字体大小
             headValue:"",
             isBorder:true,
@@ -152,6 +172,7 @@
 
           },
           'offerData1':{
+            gtBGColor:"red",
             fontSize:14, //字体大小
             headValue:"",
             isBorder:true,
@@ -166,8 +187,6 @@
         col:1,
         // 是否编辑
         isEdit:true,
-        //总额
-        totalPrice:0,
         // 表头数据
         headerData: {
           "offerData":{
@@ -198,7 +217,7 @@
               name:"柜体1",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:"5",
               unitPrice:"145",
               total:"",
               cardNum:5,
@@ -208,7 +227,7 @@
               name:"柜体2",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:"10",
               unitPrice:"522",
               total:"",
               cardNum:5,
@@ -218,7 +237,7 @@
               name:"柜体3",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:"15",
               unitPrice:"142",
               total:"",
               cardNum:5,
@@ -228,7 +247,7 @@
               name:"柜体4",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:"20",
               unitPrice:"22",
               total:"",
               cardNum:5,
@@ -238,7 +257,7 @@
               name:"柜体5",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:"25",
               unitPrice:"222",
               total:"",
               cardNum:5,
@@ -417,7 +436,7 @@
           }
         },
         value: 'offerData' //选择的表格
-
+        
 
       };
     },
@@ -428,9 +447,32 @@
       },
       //选择表头项
       onTheadSelect(){
-        console.log(this.settingData[this.value].headValue);
+        // console.log(this.settingData[this.value].headValue);
+        //被选中的表项
+        this.selectedIndex=this.settingData[this.value].headValue;
       },
+      // 筛选高亮方法
+      showRules(index,refValueBigm,gtBGColor){
 
+        //所选中的表项在第几列
+        let colIndex=Object.keys(this.allData[this.value][0]).indexOf(index);
+        // console.log(colIndex);
+        let selectedData=[];
+        for(let data of this.allData[this.value]){
+          selectedData.push(data[index]);
+        }
+        // console.log(selectedData);
+
+        for(let i in selectedData){
+          if(parseFloat(selectedData[i])>refValueBig){
+            this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
+          }
+        }
+        // console.log(this.$refs.tbody.rows[1].cells[colIndex]);
+      },
+      addShowRules(){
+        this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor); 
+      },
       //编辑头部
       editHeader(e){
         if(this.isEdit){
@@ -441,9 +483,14 @@
         this.isEdit=!this.isEdit;
       },
       //新增列
-      addCol(){
+      addCol(colName){
         // this.headerData.push({newCol:"新项"});
-        this.$set(this.headerData[this.value], 'newCol'+this.col++, "新列")
+        if(colName){
+
+        }else{
+          this.$set(this.headerData[this.value], 'newCol'+this.col++, "新列")
+        }
+        
       },
       //删除列
       delCol(key){
@@ -574,6 +621,10 @@
       changeColWidth(){
         let tTD={}; //用来存储当前更改宽度的Table Cell   
         let table = this.$refs.content;
+        if(!table){
+          table=document.getElementById("mainTable");
+        }
+        // console.log(table);
         //因为与拖拽的事件冲突，改变宽度目标元素放在tbody行上
         let tr=table.rows[1];  
         for (let j = 0; j < tr.cells.length; j++) {  
@@ -634,7 +685,9 @@
 
 <style scoped>
  
-
+  h1{
+    text-align: center
+  }
 /* 表格样式 start */
   table{
     table-layout: fixed;
@@ -673,10 +726,17 @@
 /* 表头定制项样式 end*/
 
 /* 设置面板样式 start */
-  .setting label{
+  #setting label{
     font-size: 1.45rem;
     font-weight: normal;
+    margin-right:2rem; 
+    vertical-align: sub;
   }
-
+  #setting div{
+    vertical-align: middle;
+  }
+  .show-rules{
+    margin:2rem;
+  }
 
 </style>
