@@ -758,28 +758,36 @@
       },
       downloadExl: function (json, downName, type) {  // 导出到excel
         let keyMap = [] // 获取键
-        for (let k in json[2]) {
-          keyMap.push(k)
-        }
-        console.info('keyMap', keyMap, json)
+        // for (let k in json[2]) {
+        //   keyMap.push(k)
+        // }
+        // console.info('keyMap', keyMap, json)
         let tmpdata = [] // 用来保存转换好的json
-        json.map((v, i) => keyMap.map((k, j) => Object.assign({}, {
-          v: v[k],
-          position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
-        }))).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
+        // json.map((v, i) => keyMap.map((k, j) => Object.assign({}, {
+        //   v: v[k],
+        //   position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+        // }))).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
+        //   tmpdata[v.position] = {
+        //     v: v.v
+        //   }
+        // })
+        let tmp=json.map((v, i) => {
+          for (let k in v) {
+            keyMap.push(k)
+          }
+          return keyMap.map((k, j) => {
+            return Object.assign({}, {
+              v: v[k],
+              position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+            })}
+          )
+          keyMap=[];
+        }).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
           tmpdata[v.position] = {
             v: v.v
           }
         })
-        // let tmp=json.map((v, i) => {
-        //   return keyMap.map((k, j) => {
-        //     return Object.assign({}, {
-        //       v: v[k],
-        //       position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
-        //     })}
-        //   )
-        // })
-        // console.log(tmp)
+        console.log(tmp)
         console.log(tmpdata);
         let outputPos = Object.keys(tmpdata)  // 设置区域,比如表格从A1到D10
         let tmpWB = {
