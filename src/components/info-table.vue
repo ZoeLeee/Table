@@ -16,7 +16,7 @@
               <span aria-hidden="true">&times;</span>
             </button> 
             <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
-            <input type="text" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
+            <input type="text" class="edit" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
             <input type="text" v-model="pageHeadContent[value][index].name">    
           </li>
           <li>
@@ -41,7 +41,7 @@
               <template v-for="(item,key) in headerData[value]">        
                 <th :key="item.id" draggable="true">
                   <span v-if="isEdit">{{item}}</span> 
-                  <input type="text" v-model="headerData[value][key]" v-if="!isEdit">
+                  <input type="text" class="edit" v-model="headerData[value][key]" v-if="!isEdit">
                   <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
                     <span aria-hidden="true">&times;</span>
                   </button> 
@@ -646,7 +646,8 @@
       },
       //双击编辑事件
       editItem(i){
-        this.pageHead[i].isEdit= !this.pageHead[i].isEdit;
+        // console.log(i);
+        this.pageHead[this.value][i].isEdit= !this.pageHead[this.value][i].isEdit;
       },
       //增加页头项
       addHeadItem(){
@@ -657,7 +658,7 @@
       },
       // 删除页头项
       delItem(i){
-        this.pageHead.splice(i,1);
+        this.pageHead[this.value].splice(i,1);
       },
       // 计算总额
       caclTotal(){
@@ -738,7 +739,10 @@
 </script>
 
 <style scoped>
- 
+  /* 编辑框 */
+  #out-table .edit{
+    border:1px dashed #dddddd
+  }
   h1{
     text-align: center
   }
@@ -757,10 +761,9 @@
     height: 3.5rem;
   }
   #out-table input{
-    background:no-repeat 0 0 scroll ＃EEEEEE;
     border:none;
     outline:medium;
-    width:40%;
+    width:25%;
   }
   #out-table{
     margin-top:5rem; 
@@ -775,8 +778,8 @@
   #out-table .pageItem li .close {
     float: none;
     position: absolute;
-    top:-14px;
-    left:-8px;
+    top:-10px;
+    left:75px;
   }
 /* 表头定制项样式 end*/
 
