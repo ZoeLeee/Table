@@ -4,7 +4,8 @@
       <div>
         <button @click="editHeader($event)" @keyup.enter="editHeader" class="btn btn-primary">编辑</button>
         <button @click="addCol('新列')" class="btn btn-default">新增</button>
-        <button @click="onexport" id="export-table" class="btn btn-default">导出</button>
+        <button @click=" downloadFile(outputData)" id="export-table" class="btn btn-default">导出</button>
+        <a id="downlink"></a>
       </div>
       <div id="out-table" v-if="headerData[value]">
         <h1>
@@ -73,6 +74,13 @@
           </tr>    
         </table>
       </div>
+      <!--错误信息提示-->
+      <el-dialog title="提示" v-model="errorDialog" size="tiny">
+        <span>{{errorMsg}}</span>
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="errorDialog=false">确认</el-button>
+        </span>
+      </el-dialog>
     </el-col>
     <el-col :span="6">
       <el-card class="box-card" body-style="{ padding: 30px }">
@@ -162,6 +170,7 @@
       </el-card>
     </el-col> 
   </el-row>
+  
 </template>
 
 <script>
@@ -451,7 +460,12 @@
             label: '报价明细单1'
           }
         },
-        value: 'offerData' //选择的表格
+        currentPageHead:"",
+        value: 'offerData', //选择的表格
+        outputData:[], // 导出的数据
+        outFile: '',  // 导出文件el
+        errorDialog: false, // 错误信息弹窗
+        errorMsg: '', // 错误信息内容
       };
     },
     watch:{
@@ -559,20 +573,7 @@
         
         XLSX_SAVE.saveAs(new Blob([this.s2ab(wbout)],{type:'application/octet-stream'}),"sheetjs.xlsx");
       },
-      // 转2进制
-      s2ab(s){
-        if(typeof ArrayBuffer !== 'undefined'){
-          let buf =new ArrayBuffer(s.length);
-          let view =new Uint8Array(buf);
-          for(var i=0;i!=s.length;++i) view[i] =s.charCodeAt(i) & 0xFF;  
-          return buf;      
-        }else{
-          let buf= new Array(s.length);
-          for(var i=0;i!=s.length;++i) buf[i] =s.charCodeAt(i) & 0xFF;
-          return buf;
-        }
-          
-      },
+      
       // 拖拽列函数
       dragCol(){
         // 获取th集合
@@ -721,11 +722,119 @@
             }   
           };   
         }   
-      }
+      },
+      // 导出功能
+      downloadFile: function (rs) { // 点击导出按钮
+        // let data = [{}]
+        // for (let k in rs[0]) {
+        //   data[0][k] = k
+        // }
+        // data = data.concat(rs)
+        //拼接导出的数据
+        //1.拼接标题
+        rs.push({title:this.settingPanelTitle});
+        //2.拼接表头内容
+        let headContent={};
+        //页头项
+        let pHead=this.pageHead[this.value];
+        //页头项对应的内容
+        let pHeadContent=this.pageHeadContent[this.value];
+
+        for(let i in pHead){   
+          headContent[i]=pHead[i].name+""+pHeadContent[i].name;
+        }
+        // console.log(headContent);
+        rs.push(headContent);
+        //3.拼接表头标题
+        
+        rs.push(this.headerData[this.value]);
+
+        //4.拼接表内容
+        rs.push(...this.allData[this.value]);
+        //5.拼接表尾
+        rs.push({title:"合计",value:this.settingData[this.value].totalPrice});
+        // console.log(rs);
+        this.downloadExl(rs, this.settingPanelTitle)
+      },
+      downloadExl: function (json, downName, type) {  // 导出到excel
+        let keyMap = [] // 获取键
+        for (let k in json[2]) {
+          keyMap.push(k)
+        }
+        console.info('keyMap', keyMap, json)
+        let tmpdata = [] // 用来保存转换好的json
+        json.map((v, i) => keyMap.map((k, j) => Object.assign({}, {
+          v: v[k],
+          position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+        }))).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
+          tmpdata[v.position] = {
+            v: v.v
+          }
+        })
+        // let tmp=json.map((v, i) => {
+        //   return keyMap.map((k, j) => {
+        //     return Object.assign({}, {
+        //       v: v[k],
+        //       position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+        //     })}
+        //   )
+        // })
+        // console.log(tmp)
+        console.log(tmpdata);
+        let outputPos = Object.keys(tmpdata)  // 设置区域,比如表格从A1到D10
+        let tmpWB = {
+          SheetNames: ['mySheet'], // 保存的表标题
+          Sheets: {
+            'mySheet': Object.assign({},
+              tmpdata, // 内容
+              {
+                '!ref': outputPos[0] + ':' + outputPos[outputPos.length - 1] // 设置填充区域
+              })
+          }
+        }
+        let tmpDown = new Blob([this.s2ab(XLSX.write(tmpWB,
+          {bookType: (type === undefined ? 'xlsx' : type), bookSST: false, type: 'binary'} // 这里的数据是用来定义导出的格式类型
+        ))], {
+          type: ''
+        })  // 创建二进制对象写入转换好的字节流
+        var href = URL.createObjectURL(tmpDown)  // 创建对象超链接
+        this.outFile.download = downName + '.xlsx'  // 下载名称
+        this.outFile.href = href  // 绑定a标签
+        this.outFile.click()  // 模拟点击实现下载
+        setTimeout(function () {  // 延时释放
+          URL.revokeObjectURL(tmpDown) // 用URL.revokeObjectURL()来释放这个object URL
+        }, 100)
+      },
+      // 转2进制
+      s2ab(s){
+        if(typeof ArrayBuffer !== 'undefined'){
+          let buf =new ArrayBuffer(s.length);
+          let view =new Uint8Array(buf);
+          for(var i=0;i!=s.length;++i) view[i] =s.charCodeAt(i) & 0xFF;  
+          return buf;      
+        }else{
+          let buf= new Array(s.length);
+          for(var i=0;i!=s.length;++i) buf[i] =s.charCodeAt(i) & 0xFF;
+          return buf;
+        } 
+      },
+      getCharCol: function (n) { // 将指定的自然数转换为26进制表示。映射关系：[0-25] -> [A-Z]。
+        let s = ''
+        let m = 0
+        while (n > 0) {
+          m = n % 26 + 1
+          s = String.fromCharCode(m + 64) + s
+          n = (n - m) / 26
+        }
+        return s
+      },
     },
     mounted(){
+      
+      this.currentPageHead=this.pageHead[this.value];
       this.caclTotal();
       this.onTableSelect();
+      this.outFile = document.getElementById('downlink');
     },
     updated(){
       //改变表头位置

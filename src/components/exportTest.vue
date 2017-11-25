@@ -4,7 +4,7 @@
      accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
   <a id="downlink"></a>
   <el-button class="button" @click="uploadFile()">导入</el-button>
-  <el-button class="button" @click="downloadFile(excelData)">导出</el-button>
+  <el-button class="button" @click="downloadFile(newData)">导出</el-button>
   <!--错误信息提示-->
   <el-dialog title="提示" v-model="errorDialog" size="tiny">
     <span>{{errorMsg}}</span>
@@ -13,7 +13,7 @@
     </span>
   </el-dialog>
   <!--展示导入信息-->
-  <el-table :data="excelData" tooltip-effect="dark">
+  <el-table :data="newData" tooltip-effect="dark">
     <el-table-column label="名称" prop="name" show-overflow-tooltip></el-table-column>
     <el-table-column label="分量" prop="size" show-overflow-tooltip></el-table-column>
     <el-table-column label="口味" prop="taste" show-overflow-tooltip></el-table-column>
@@ -25,64 +25,142 @@
 
 <script>
 // 引入xlsx
-var XLSX = require('xlsx')
+import XLSX from 'xlsx';
 export default {
-  name: 'Index',
+  name: 'Test',
   data () {
-return {
-  fullscreenLoading: false, // 加载中
-  imFile: '', // 导入文件el
-  outFile: '',  // 导出文件el
-  errorDialog: false, // 错误信息弹窗
-  errorMsg: '', // 错误信息内容
-  excelData: [  // 测试数据
-    {
-      name: '红烧鱼', size: '大', taste: '微辣', price: '40', remain: '100'
-    },
-    {
-      name: '麻辣小龙虾', size: '大', taste: '麻辣', price: '138', remain: '200'
-    },
-    {
-      name: '清蒸小龙虾', size: '大', taste: '清淡', price: '138', remain: '200'
-    },
-    {
-      name: '香辣小龙虾', size: '大', taste: '特辣', price: '138', remain: '200'
-    },
-    {
-      name: '十三香小龙虾', size: '大', taste: '中辣', price: '138', remain: '108'
-    },
-    {
-      name: '蒜蓉小龙虾', size: '大', taste: '中辣', price: '138', remain: '100'
-    },
-    {
-      name: '凉拌牛肉', size: '中', taste: '中辣', price: '48', remain: '60'
-    },
-    {
-      name: '虾仁寿司', size: '大', taste: '清淡', price: '29', remain: '无限'
-    },
-    {
-      name: '海苔寿司', size: '大', taste: '微辣', price: '26', remain: '无限'
-    },
-    {
-      name: '金针菇寿司', size: '大', taste: '清淡', price: '23', remain: '无限'
-    },
-    {
-      name: '泡菜寿司', size: '大', taste: '微辣', price: '24', remain: '无限'
-    },
-    {
-      name: '鳗鱼寿司', size: '大', taste: '清淡', price: '28', remain: '无限'
-    },
-    {
-      name: '肉松寿司', size: '大', taste: '清淡', price: '22', remain: '无限'
-    },
-    {
-      name: '三文鱼寿司', size: '大', taste: '清淡', price: '30', remain: '无限'
-    },
-    {
-      name: '蛋黄寿司', size: '大', taste: '清淡', price: '20', remain: '无限'
+    return {
+      fullscreenLoading: false, // 加载中
+      imFile: '', // 导入文件el
+      outFile: '',  // 导出文件el
+      errorDialog: false, // 错误信息弹窗
+      errorMsg: '', // 错误信息内容
+      excelData: [  // 测试数据
+        {
+          name: '红烧鱼', size: '大', taste: '微辣', price: '40', remain: '100'
+        },
+        {
+          name: '麻辣小龙虾', size: '大', taste: '麻辣', price: '138', remain: '200'
+        },
+        {
+          name: '清蒸小龙虾', size: '大', taste: '清淡', price: '138', remain: '200'
+        },
+        {
+          name: '香辣小龙虾', size: '大', taste: '特辣', price: '138', remain: '200'
+        },
+        {
+          name: '十三香小龙虾', size: '大', taste: '中辣', price: '138', remain: '108'
+        },
+        {
+          name: '蒜蓉小龙虾', size: '大', taste: '中辣', price: '138', remain: '100'
+        },
+        {
+          name: '凉拌牛肉', size: '中', taste: '中辣', price: '48', remain: '60'
+        },
+        {
+          name: '虾仁寿司', size: '大', taste: '清淡', price: '29', remain: '无限'
+        },
+        {
+          name: '海苔寿司', size: '大', taste: '微辣', price: '26', remain: '无限'
+        },
+        {
+          name: '金针菇寿司', size: '大', taste: '清淡', price: '23', remain: '无限'
+        },
+        {
+          name: '泡菜寿司', size: '大', taste: '微辣', price: '24', remain: '无限'
+        },
+        {
+          name: '鳗鱼寿司', size: '大', taste: '清淡', price: '28', remain: '无限'
+        },
+        {
+          name: '肉松寿司', size: '大', taste: '清淡', price: '22', remain: '无限'
+        },
+        {
+          name: '三文鱼寿司', size: '大', taste: '清淡', price: '30', remain: '无限'
+        },
+        {
+          name: '蛋黄寿司', size: '大', taste: '清淡', price: '20', remain: '无限'
+        }
+      ],
+      // 导出的新数据
+      newData:[
+        {
+          name:"项目名称",
+          spec:"规格",
+          unit:"单位",
+          count:"数量",
+          unitPrice:"单价",
+          total:"金额",
+          cardNum:"卡数",
+          comments:"备注"
+        },
+        {
+          name:"边框1",
+          spec:"sasd",
+          unit:"sadad",
+          count:"12",
+          unitPrice:"14522",
+          total:"",
+          cardNum:5,
+          comments:"大师大师多撒好低"
+        },
+        {
+          name:"边框2",
+          spec:"sasd",
+          unit:"sadad",
+          count:"12",
+          unitPrice:"14522",
+          total:"",
+          cardNum:5,
+          comments:"大师大师多撒好低"
+        },
+        {
+          name:"边框3",
+          spec:"sasd",
+          unit:"sadad",
+          count:"12",
+          unitPrice:"14522",
+          total:"",
+          cardNum:5,
+          comments:"大师大师多撒好低"
+        },
+        {
+          name:"边框4",
+          spec:"sasd",
+          unit:"sadad",
+          count:"12",
+          unitPrice:"14522",
+          total:"",
+          cardNum:5,
+          comments:"大师大师多撒好低"
+        },
+        {
+          name:"边框5",
+          spec:"sasd",
+          unit:"sadad",
+          count:"12",
+          unitPrice:"14522",
+          total:"",
+          cardNum:5,
+          comments:"大师大师多撒好低"
+        },
+        {
+          name:"边框6",
+          spec:"sasd",
+          unit:"sadad",
+          count:"12",
+          unitPrice:"14522",
+          total:"",
+          cardNum:5,
+          comments:"大师大师多撒好低"
+        },
+        {
+          name:"合计",
+          total:1231313
+
+        }
+      ]
     }
-  ]
-}
   },
   mounted () {
     this.imFile = document.getElementById('imFile')
@@ -93,12 +171,15 @@ return {
       this.imFile.click()
     },
     downloadFile: function (rs) { // 点击导出按钮
-      let data = [{}]
-      for (let k in rs[0]) {
-        data[0][k] = k
-      }
-      data = data.concat(rs)
-      this.downloadExl(data, '菜单')
+      // let data = [{}]
+      // for (let k in rs[0]) {
+      //   data[0][k] = k
+      // }
+      // data = data.concat(rs)
+      
+
+
+      this.downloadExl(rs, '菜单')
     },
     importFile: function () { // 导入excel
       this.fullscreenLoading = true
@@ -146,6 +227,7 @@ return {
           v: v.v
         }
       })
+      // console.log(tmpdata);
       let outputPos = Object.keys(tmpdata)  // 设置区域,比如表格从A1到D10
       let tmpWB = {
         SheetNames: ['mySheet'], // 保存的表标题
