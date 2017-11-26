@@ -725,11 +725,6 @@
       },
       // 导出功能
       downloadFile: function (rs) { // 点击导出按钮
-        // let data = [{}]
-        // for (let k in rs[0]) {
-        //   data[0][k] = k
-        // }
-        // data = data.concat(rs)
         //拼接导出的数据
         //1.拼接标题
         rs.push({title:this.settingPanelTitle});
