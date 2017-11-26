@@ -757,46 +757,37 @@
         this.downloadExl(rs, this.settingPanelTitle)
       },
       downloadExl: function (json, downName, type) {  // 导出到excel
-        let keyMap = [] // 获取键
-        // for (let k in json[2]) {
-        //   keyMap.push(k)
-        // }
-        // console.info('keyMap', keyMap, json)
         let tmpdata = [] // 用来保存转换好的json
-        // json.map((v, i) => keyMap.map((k, j) => Object.assign({}, {
-        //   v: v[k],
-        //   position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
-        // }))).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
-        //   tmpdata[v.position] = {
-        //     v: v.v
-        //   }
-        // })
-        let tmp=json.map((v, i) => {
-          for (let k in v) {
-            keyMap.push(k)
+        let maxLen=0; //最长的一行
+        json.map((v, i) => {
+          if(maxLen<Object.keys(v).length){
+            maxLen=Object.keys(v).length;
           }
-          return keyMap.map((k, j) => {
-            return Object.assign({}, {
+          return Object.keys(v).map((k, j) => {  //取出键对应的值
+
+            return Object.assign({}, { //拼接输出的sheet
               v: v[k],
               position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
             })}
           )
-          keyMap=[];
-        }).reduce((prev, next) => prev.concat(next)).forEach(function (v) {
-          tmpdata[v.position] = {
+        }).reduce((prev, next) =>  prev.concat(next)).forEach(function (v) {
+          tmpdata[v.position] = { //转换输出json
             v: v.v
           }
         })
-        console.log(tmp)
-        console.log(tmpdata);
         let outputPos = Object.keys(tmpdata)  // 设置区域,比如表格从A1到D10
+        // console.log(outputPos);
+        
+        // 转化最长的行所对应的区域码
+        maxLen=this.getCharCol(maxLen);
+        // console.log(maxLen+outputPos[outputPos.length-1].slice(1));
         let tmpWB = {
           SheetNames: ['mySheet'], // 保存的表标题
           Sheets: {
             'mySheet': Object.assign({},
               tmpdata, // 内容
               {
-                '!ref': outputPos[0] + ':' + outputPos[outputPos.length - 1] // 设置填充区域
+                '!ref': outputPos[0] + ':' + (maxLen+outputPos[outputPos.length-1].slice(1)) // 设置填充区域
               })
           }
         }
@@ -826,7 +817,8 @@
           return buf;
         } 
       },
-      getCharCol: function (n) { // 将指定的自然数转换为26进制表示。映射关系：[0-25] -> [A-Z]。
+      // 将指定的自然数转换为26进制表示。映射关系：[0-25] -> [A-Z]。
+      getCharCol(n) { 
         let s = ''
         let m = 0
         while (n > 0) {
