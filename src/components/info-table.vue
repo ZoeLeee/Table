@@ -3,7 +3,6 @@
     <el-col :span="18">
       <div>
         <button @click="editHeader($event)" @keyup.enter="editHeader" class="btn btn-primary">编辑</button>
-        <button @click="addCol('新列')" class="btn btn-default">新增</button>
         <button @click=" downloadFile(outputData)" id="export-table" class="btn btn-default">导出</button>
         <a id="downlink"></a>
       </div>
@@ -11,7 +10,7 @@
         <h1>
           {{settingPanelTitle}}
         </h1>
-        <ul class="list-unstyled list-inline pageItem" >
+        <ul class="list-unstyled list-inline pageItem pageHeader" >
           <li v-for="(item,index) in pageHead[value]" :key="item.id">
             <button type="button" class="close" aria-label="Close" v-if="item.isEdit" @click="delItem(index)">
               <span aria-hidden="true">&times;</span>
@@ -24,18 +23,6 @@
             <button class="btn btn-primary" @click="addHeadItem">+</button>
           </li>
         </ul>
-        <!-- <table>
-          <tr style="word-wrap:break-word;word-break:break-all">
-            <td style="word-wrap:break-word;word-break:break-all;width:33%;white-space:nowrap" v-for="(item,index) in pageHead" :key="item.id">
-              <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
-              <input type="text" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
-              <input type="text">
-            </td>
-            <td style="word-wrap:break-word;word-break:break-all;width:33%;white-space:nowrap">
-              <button class="btn btn-primary" @click="addHeadItem">+</button>
-            </td>
-          </tr>
-        </table> -->
         <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}" id="mainTable">
           <thead ref="tHead">
             <tr>
@@ -66,21 +53,12 @@
             </tr> 
           </tfoot> 
         </table> 
-        <table>
-          <tr>
-            <td align="right">
-              合计：<span>¥{{settingData[value].totalPrice}}</span>
-            </td>
-          </tr>    
-        </table>
+        <ul class="list-unstyled pull-right">
+          <li v-for="item in pageFootContent" :key="item.id">
+            {{item.title}}<span>{{item.value}}</span>
+          </li>
+        </ul>
       </div>
-      <!--错误信息提示-->
-      <el-dialog title="提示" v-model="errorDialog" size="tiny">
-        <span>{{errorMsg}}</span>
-        <span slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="errorDialog=false">确认</el-button>
-        </span>
-      </el-dialog>
     </el-col>
     <el-col :span="6">
       <el-card class="box-card" body-style="{ padding: 30px }">
@@ -148,7 +126,6 @@
                 <el-button type="primary" @click="addShowRules">添加规则</el-button>
               </el-collapse-item>
               <el-collapse-item title="添加列" name="3">
-                
                 <el-input placeholder="请输入内容" v-model="newColName" >
                   <el-select  slot="prepend" v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect" style="width:130px">
                     <el-option label="空列" :value="0"></el-option>
@@ -161,6 +138,23 @@
                 </el-select>
                   <el-button slot="append" icon="el-icon-plus" @click="addCol(newColName)"></el-button>
                 </el-input>
+              </el-collapse-item>
+              <el-collapse-item title="添加统计" name="4">
+    
+                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
+    
+                  <el-option
+                    v-for="(item,key) in headerData[value]"
+                    :key="item.id"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select>
+                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:130px">
+                  <el-option label="合计" :value="0"></el-option>
+                  <el-option label="平均" :value="1"></el-option>
+                </el-select>
+                <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
               </el-collapse-item>
             </el-collapse>
           
@@ -175,7 +169,6 @@
 
 <script>
   import XLSX from 'xlsx';
-  import XLSX_SAVE from  'file-saver';
 
   export default {
     data() {
@@ -184,6 +177,7 @@
         gtRefValue:0, //参考值 大于时
         ltRefValue:0,
         newColName:"",
+        caclType:"",//统计类型
         settingData:{
           'offerData':{
             ltBGColor:"#13ce66",
@@ -304,7 +298,7 @@
               name:"边框1",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:12,
               unitPrice:"14522",
               total:"",
               cardNum:5,
@@ -314,7 +308,7 @@
               name:"边框2",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:12,
               unitPrice:"14522",
               total:"",
               cardNum:5,
@@ -324,7 +318,7 @@
               name:"边框3",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:12,
               unitPrice:"14522",
               total:"",
               cardNum:5,
@@ -334,7 +328,7 @@
               name:"边框4",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:12,
               unitPrice:"14522",
               total:"",
               cardNum:5,
@@ -344,7 +338,7 @@
               name:"边框5",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:12,
               unitPrice:"14522",
               total:"",
               cardNum:5,
@@ -354,7 +348,7 @@
               name:"边框6",
               spec:"sasd",
               unit:"sadad",
-              count:"12",
+              count:12,
               unitPrice:"14522",
               total:"",
               cardNum:5,
@@ -460,12 +454,13 @@
             label: '报价明细单1'
           }
         },
+        //页尾内容
+        pageFootContent:[],
         currentPageHead:"",
         value: 'offerData', //选择的表格
         outputData:[], // 导出的数据
-        outFile: '',  // 导出文件el
-        errorDialog: false, // 错误信息弹窗
-        errorMsg: '', // 错误信息内容
+        outFile: ''  // 导出文件el
+ 
       };
     },
     watch:{
@@ -487,34 +482,72 @@
         //被选中的表项
         this.selectedIndex=this.settingData[this.value].headValue;
       },
-      // 筛选高亮方法
-      showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
-        // console.log(ltBGColor);
-        //所选中的表项在第几列
-        let colIndex=Object.keys(this.allData[this.value][0]).indexOf(index);
-        // console.log(colIndex);
+      onCaclSelect(){
+
+        this.selectedIndex=this.settingData[this.value].headValue;
+      },
+      //获得对应列数据
+      getColData(index){
         let selectedData=[];
         for(let data of this.allData[this.value]){
           selectedData.push(data[index]);
         }
-        // console.log(selectedData);
+ 
+        return selectedData;
+        
+      },
+      // 筛选高亮方法
+      showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
+        
+        //所选中的表项在第几列
+        let colIndex=Object.keys(this.allData[this.value][0]).indexOf(index);
+        let selectedData=this.getColData(index);
+        // console.log(selectedData)
+
         for(let i in selectedData){
           
           if(parseFloat(selectedData[i])>refValueBig && refValueBig !==0){
      
             this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
           } 
-          // console.log(parseFloat(selectedData[i])<refValueSm);
+          
           if(parseFloat(selectedData[i])<refValueSm && refValueSm !==0){
-            // console.log(ltBGColor);
+            
             this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
           }
         }
-        // console.log(this.$refs.tbody.rows[1].cells[colIndex]);
+        
       },
       addShowRules(){
        
         this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor,this.ltRefValue,this.settingData[this.value].ltBGColor); 
+      },
+      //添加自定义统计
+      addCaclCol(){
+        
+        let selectedData=this.getColData(this.selectedIndex);
+        let sum=0;//存储和
+        let avg=0;//存储平均值
+        if(this.caclType== 0){
+          sum = selectedData.reduce(function (a, b) {
+            return parseFloat(a) + parseFloat(b);
+          });
+          this.pageFootContent.push({
+            title:this.headerData[this.value][this.selectedIndex]+"合计：",
+            value:sum
+          });
+       
+        }else if(this.caclType==1){
+          avg=selectedData.reduce(function (a, b) {
+            return parseFloat(a) + parseFloat(b);
+          })/(selectedData.length);
+          this.pageFootContent.push({
+            title:this.headerData[this.value][this.selectedIndex]+"平均值：",
+            value:avg.toFixed(2)
+          })
+        }
+
+
       },
       //编辑头部
       editHeader(e){
@@ -564,14 +597,6 @@
         for(let data of this.allData[this.value]){
           this.$delete(data,key);
         } 
-      },
-      //导出表格
-      onexport(evt){
-        let wb=XLSX.utils.table_to_book(document.getElementById("out-table"));
-      
-        let wbout=XLSX.write(wb,{bookType:'xlsx',type:'binary'});
-        
-        XLSX_SAVE.saveAs(new Blob([this.s2ab(wbout)],{type:'application/octet-stream'}),"sheetjs.xlsx");
       },
       
       // 拖拽列函数
@@ -724,9 +749,10 @@
         }   
       },
       // 导出功能
-      downloadFile: function (rs) { // 点击导出按钮
+      downloadFile(rs) { // 点击导出按钮
         //拼接导出的数据
         //1.拼接标题
+        rs=[];
         rs.push({title:this.settingPanelTitle});
         //2.拼接表头内容
         let headContent={};
@@ -748,12 +774,30 @@
         rs.push(...this.allData[this.value]);
         //5.拼接表尾
         rs.push({title:"合计",value:this.settingData[this.value].totalPrice});
-        // console.log(rs);
+        // 6.拼接页尾
+        let pageFoot={};
+        
+        for(let index in this.pageFootContent){
+          pageFoot[index]=this.pageFootContent[index].title+this.pageFootContent[index].value;
+        }
+        rs.push(pageFoot);
+        
         this.downloadExl(rs, this.settingPanelTitle)
       },
-      downloadExl: function (json, downName, type) {  // 导出到excel
+      downloadExl(json, downName, type) {  // 导出到excel
+        
         let tmpdata = [] // 用来保存转换好的json
+      
         let maxLen=0; //最长的一行
+        let styleobj={
+            bold: true,
+            font: 'Arial',
+            size: 16,
+            fg_color: '#000000',
+            bg_color: '#ffffff'
+        }
+        var ws = { };  
+        ws['!cols']= [];
         json.map((v, i) => {
           if(maxLen<Object.keys(v).length){
             maxLen=Object.keys(v).length;
@@ -762,30 +806,78 @@
 
             return Object.assign({}, { //拼接输出的sheet
               v: v[k],
-              position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1)
+              position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1),
+               
             })}
           )
         }).reduce((prev, next) =>  prev.concat(next)).forEach(function (v) {
-          tmpdata[v.position] = { //转换输出json
-            v: v.v
+          var cell={ //转换输出json
+            v: v.v,
+            s:{ 
+              fill : {
+                fgColor : {
+                    theme : 8,
+                    tint : 0.3999755851924192,
+                    rgb : '08CB26'
+                }
+              },
+              font : {
+                  color : {
+                      rgb : "FFFFFF"
+                  },
+                  bold : true
+              },
+              border : {
+                  bottom : {
+                      style : "thin",
+                      color : {
+                          theme : 5,
+                          tint : "-0.3",
+                          rgb: "E8E5E4"
+                      }
+                  }
+              }  
+            }
           }
+          if ( typeof cell.v === 'number')  
+               cell.t = 'n';  
+            else if ( typeof cell.v === 'boolean')  
+                cell.t = 'b';  
+            else if (cell.v instanceof Date) {  
+                cell.t = 'n';  
+                cell.z = XLSX.SSF._table[14];  
+                cell.v = datenum(cell.v);  
+            } else  
+                cell.t = 's';
+          tmpdata[v.position] = cell;
+          
         })
+        // console.log(tmpdata);
         let outputPos = Object.keys(tmpdata)  // 设置区域,比如表格从A1到D10
-        // console.log(outputPos);
-        
+        for(var n = 0; n != maxLen; ++n){  
+          ws['!cols'].push({  
+            wpx: 170  
+          });  
+        }
         // 转化最长的行所对应的区域码
         maxLen=this.getCharCol(maxLen);
+        
         // console.log(maxLen+outputPos[outputPos.length-1].slice(1));
         let tmpWB = {
           SheetNames: ['mySheet'], // 保存的表标题
           Sheets: {
             'mySheet': Object.assign({},
               tmpdata, // 内容
+              ws,
               {
                 '!ref': outputPos[0] + ':' + (maxLen+outputPos[outputPos.length-1].slice(1)) // 设置填充区域
               })
           }
         }
+        console.log(tmpWB);
+        
+        
+
         let tmpDown = new Blob([this.s2ab(XLSX.write(tmpWB,
           {bookType: (type === undefined ? 'xlsx' : type), bookSST: false, type: 'binary'} // 这里的数据是用来定义导出的格式类型
         ))], {
@@ -874,7 +966,7 @@
   }
 /* 表格样式 end */
 /* 表头定制项样式 start*/
-  #out-table li{
+  #out-table .pageHeader li{
     width: 30%;
     margin-top:2rem; 
     position: relative;
