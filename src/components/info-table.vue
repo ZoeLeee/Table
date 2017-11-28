@@ -39,6 +39,7 @@
           </thead>
           <tbody ref="tbody">
             <tr v-for="data in allData[value]" :key="data.id">
+              <!-- <td v-for="item in headerData[value]" :key="item.id">{{data[getHeadKey(item)]}}</td> -->
               <td v-for="item in data" :key="item.id">{{item}}</td>
             </tr>
           </tbody>
@@ -459,7 +460,8 @@
         currentPageHead:"",
         value: 'offerData', //选择的表格
         outputData:[], // 导出的数据
-        outFile: ''  // 导出文件el
+        outFile: '',  // 导出文件el
+        cloneHead:{}//克隆的表头
  
       };
     },
@@ -560,34 +562,38 @@
       },
       //新增列
       addCol(colName){
-        // this.headerData.push({newCol:"新项"});
+        
           let key='newCol'+ this.col++;
+          let allData=this.allData[this.value];
+          let headata=this.headerData[this.value];
           // console.log(key);
-          if(!colName)
+          if(!colName){
             if(this.selectedIndex){
-              // console.log(this.selectedIndex);
-              colName=this.headerData[this.value][this.selectedIndex];
-            }
-            else
+              
+              colName=headata[this.selectedIndex];
+              
+            }else{
               colName="新列";
-          this.$set(this.headerData[this.value],key , colName)
-          //所选中的表项在第几列
+            }
+          }
+          
+          this.$set(headata,key , colName)
+          
           if(this.selectedIndex){
             
-            let colIndex=Object.keys(this.allData[this.value][0]).indexOf(this.selectedIndex);
-            // console.log(colIndex);
-            let selectedData=[];
-            for(let data of this.allData[this.value]){
-              selectedData.push(data[this.selectedIndex]);
-            }
-            let allData=this.allData[this.value]
-            // console.log(selectedData);
+            //所选中的表项在第几列
+            let colIndex=Object.keys(allData[0]).indexOf(this.selectedIndex);
+            //获取列数据
+            let selectedData=this.getColData(this.selectedIndex);
+            console.log(selectedData);
             for(let index in allData){
+              
               this.$set(allData[index],key,selectedData[index])
             }
+            console.log(allData);
           }else{
-            for(let index in this.allData[this.value]){
-              this.$set(this.allData[this.value][index],key,"")
+            for(let index in allData){
+              this.$set(allData[index],key,"")
             }
           }
       },
@@ -677,10 +683,10 @@
       },
       //增加页头项
       addHeadItem(){
-        // console.log(this.pageHead);
+        
         this.pageHead[this.value].push({name:"新项:",isEdit:false});
         this.pageHeadContent[this.value].push({name:""});
-        // console.log(this.pageHead);
+        
       },
       // 删除页头项
       delItem(i){
@@ -761,11 +767,17 @@
         //页头项对应的内容
         let pHeadContent=this.pageHeadContent[this.value];
 
-        for(let i in pHead){   
+        for(let i in pHead){  
+          if(i %3==0){
+            rs.push(headContent);
+            headContent={};
+          } 
           headContent[i]=pHead[i].name+""+pHeadContent[i].name;
+          
         }
         // console.log(headContent);
         rs.push(headContent);
+        rs.push({});
         //3.拼接表头标题
         
         rs.push(this.headerData[this.value]);
@@ -787,15 +799,9 @@
       downloadExl(json, downName, type) {  // 导出到excel
         
         let tmpdata = [] // 用来保存转换好的json
-      
+        const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary', cellStyles: true };
         let maxLen=0; //最长的一行
-        let styleobj={
-            bold: true,
-            font: 'Arial',
-            size: 16,
-            fg_color: '#000000',
-            bg_color: '#ffffff'
-        }
+
         var ws = { };  
         ws['!cols']= [];
         json.map((v, i) => {
@@ -812,32 +818,7 @@
           )
         }).reduce((prev, next) =>  prev.concat(next)).forEach(function (v) {
           var cell={ //转换输出json
-            v: v.v,
-            s:{ 
-              fill : {
-                fgColor : {
-                    theme : 8,
-                    tint : 0.3999755851924192,
-                    rgb : '08CB26'
-                }
-              },
-              font : {
-                  color : {
-                      rgb : "FFFFFF"
-                  },
-                  bold : true
-              },
-              border : {
-                  bottom : {
-                      style : "thin",
-                      color : {
-                          theme : 5,
-                          tint : "-0.3",
-                          rgb: "E8E5E4"
-                      }
-                  }
-              }  
-            }
+            v: v.v
           }
           if ( typeof cell.v === 'number')  
                cell.t = 'n';  
@@ -853,7 +834,13 @@
           
         })
         // console.log(tmpdata);
-        let outputPos = Object.keys(tmpdata)  // 设置区域,比如表格从A1到D10
+        let outputPos = Object.keys(tmpdata) ; // 设置区域,比如表格从A1到D10
+        console.log( tmpdata["A8"]);
+        tmpdata["A8"].s = { font: { sz: 14, bold: true, color: { rgb: "FFFFAA00" } }, fill: { bgColor: { indexed: 64 }, fgColor: { rgb: "FFFF00" } } };//<====设置xlsx单元格样式
+        tmpdata["!merges"] = [{
+                s: { c: 0, r: 0 },
+                e: { c: 4, r: 0 }
+            }];//<====合并单元格 
         for(var n = 0; n != maxLen; ++n){  
           ws['!cols'].push({  
             wpx: 170  
@@ -869,17 +856,15 @@
             'mySheet': Object.assign({},
               tmpdata, // 内容
               ws,
+              {cellStyles: true},
               {
                 '!ref': outputPos[0] + ':' + (maxLen+outputPos[outputPos.length-1].slice(1)) // 设置填充区域
               })
           }
         }
-        console.log(tmpWB);
         
-        
-
         let tmpDown = new Blob([this.s2ab(XLSX.write(tmpWB,
-          {bookType: (type === undefined ? 'xlsx' : type), bookSST: false, type: 'binary'} // 这里的数据是用来定义导出的格式类型
+          {cellStyles: true,bookType: (type === undefined ? 'xlsx' : type), bookSST: false, type: 'binary'} // 这里的数据是用来定义导出的格式类型
         ))], {
           type: ''
         })  // 创建二进制对象写入转换好的字节流
@@ -890,6 +875,7 @@
         setTimeout(function () {  // 延时释放
           URL.revokeObjectURL(tmpDown) // 用URL.revokeObjectURL()来释放这个object URL
         }, 100)
+     
       },
       // 转2进制
       s2ab(s){
@@ -915,9 +901,23 @@
         }
         return s
       },
+      //由表头的value获取key
+      getHeadKey(key){
+ 
+        // 交换key和value位置后的新对象
+        let newHead={};
+        let headerData=this.cloneHead[this.value]
+        for(let i in headerData){
+          // console.log(i,headerData[i]);
+          newHead[headerData[i]]=i;
+        }
+        // console.log(newHead);
+        return newHead[key];
+      }
     },
     mounted(){
-      
+      // this.getHeadKey();
+      this.cloneHead=JSON.parse(JSON.stringify(this.headerData));;
       this.currentPageHead=this.pageHead[this.value];
       this.caclTotal();
       this.onTableSelect();
