@@ -1,7 +1,7 @@
 <template>
   <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }"> 
     <el-col :span="18">
-      
+     
       <div id="out-table" v-if="headerData[value]">
         <h1>
           {{settingPanelTitle}}
@@ -24,16 +24,15 @@
             <div>
               <el-button @click="editHeader($event)" @keyup.enter="editHeader" type="primary">编辑</el-button>
               <el-button type="danger" @click="delTable(key)">删除</el-button>
-              <el-button @click=" downloadFile(outputData)" id="export-table" type="success">导出</el-button>
-              <a id="downlink"></a>
+             
             </div>
             <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}" id="mainTable">
               <thead ref="tHead">
                 <tr>
-                  <template v-for="(item,key) in headerData[value]">        
+                  <template v-for="(item,key1 ) in headerData[value][key]">        
                     <th :key="item.id" draggable="true">
                       <span v-if="isEdit">{{item}}</span> 
-                      <input type="text" class="edit" v-model="headerData[value][key]" v-if="!isEdit">
+                      <input type="text" class="edit" v-model="headerData[value][key][key1]" v-if="!isEdit">
                       <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
                         <span aria-hidden="true">&times;</span>
                       </button> 
@@ -47,16 +46,16 @@
                   <td v-for="item in data" :key="item.id">{{item}}</td>
                 </tr>
               </tbody>
-              <!-- <tfoot v-if="allData[value][0].data">
+              <tfoot v-if="allData[value][key].data">
                 <tr>
                   <td>
                     合计
                   </td>
-                  <td :colspan="Object.keys(headerData[value]).length-1">
+                  <td :colspan="Object.keys(headerData[value][key]).length-1">
                     <span>¥{{settingData[value].totalPrice}}</span>
                   </td>
                 </tr> 
-              </tfoot>  -->
+              </tfoot>
             </table>
           </el-collapse-item>
         </el-collapse> 
@@ -83,6 +82,8 @@
         <el-card>
           <div slot="header" class="clearfix">
             {{settingPanelTitle}}
+             <el-button class="pull-right" @click="downloadFile(outputData)" id="export-table" type="success" size="mini">导出</el-button>
+             <a id="downlink"></a>
           </div>
           <div id="setting">
             <el-collapse v-model="activeNames" >
@@ -115,7 +116,7 @@
               <el-collapse-item title="显示设置" name="2"> 
                 <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
                   <el-option
-                    v-for="(item,key) in headerData[value]"
+                    v-for="(item,key) in headerData[value].summary"
                     :key="item.id"
                     :label="item"
                     :value="key">
@@ -133,37 +134,6 @@
                 </div>
                 <el-button type="primary" @click="addShowRules">添加规则</el-button>
               </el-collapse-item>
-              <el-collapse-item title="添加列" name="3">
-                <el-input placeholder="请输入内容" v-model="newColName" >
-                  <el-select  slot="prepend" v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect" style="width:130px">
-                    <el-option label="空列" :value="0"></el-option>
-                  <el-option
-                    v-for="(item,key) in headerData[value]"
-                    :key="item.id"
-                    :label="item"
-                    :value="key">
-                  </el-option>
-                </el-select>
-                  <el-button slot="append" icon="el-icon-plus" @click="addCol(newColName)"></el-button>
-                </el-input>
-              </el-collapse-item>
-              <el-collapse-item title="添加统计" name="4">
-    
-                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
-    
-                  <el-option
-                    v-for="(item,key) in headerData[value]"
-                    :key="item.id"
-                    :label="item"
-                    :value="key">
-                  </el-option>
-                </el-select>
-                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:130px">
-                  <el-option label="合计" :value="0"></el-option>
-                  <el-option label="平均" :value="1"></el-option>
-                </el-select>
-                <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
-              </el-collapse-item>
               <el-collapse-item title="添加表格" name="5">
                 <el-select v-model="selectTable" placeholder="请选择" style="width:130px">
                   <el-option
@@ -175,6 +145,46 @@
                 </el-select>
                 <el-button icon="el-icon-plus" @click="addTableType"></el-button>
               </el-collapse-item>
+              <el-collapse-item title="添加列" name="3">
+                <el-input placeholder="请输入内容" v-model="newColName" >
+                  <el-select slot="prepend" v-model="selectTable" placeholder="请选择" style="width:130px">
+                    <el-option
+                      v-for="(item,key) in showTable"
+                      :key="key"
+                      :label="item"
+                      :value="key">
+                    </el-option>
+                  </el-select>
+                  <el-select  slot="prepend" v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect" style="width:130px">
+                    <el-option label="空列" :value="0"></el-option>
+                    <el-option
+                      v-for="(item,key) in headerData[value][selectTable]"
+                      :key="item.id"
+                      :label="item"
+                      :value="key">
+                    </el-option>
+                  </el-select>
+                  <el-button slot="append" icon="el-icon-plus" @click="addCol(newColName)"></el-button>
+                </el-input>
+              </el-collapse-item>
+              <el-collapse-item title="添加统计" name="4">
+    
+                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
+    
+                  <el-option
+                    v-for="(item,key) in headerData[value].summary"
+                    :key="item.id"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select>
+                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:130px">
+                  <el-option label="合计" :value="0"></el-option>
+                  <el-option label="平均" :value="1"></el-option>
+                </el-select>
+                <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
+              </el-collapse-item>
+              
             </el-collapse>
           
           </div>
@@ -230,24 +240,67 @@
         // 表头数据
         headerData: {
           "offerData":{
-            name:"项目名称",
-            spec:"规格",
-            unit:"单位",
-            count:"数量",
-            unitPrice:"单价",
-            total:"金额",
-            cardNum:"卡数",
-            comments:"备注"
+            summary:{
+              name:"项目名称",
+              spec:"规格",
+              unit:"单位",
+              count:"数量",
+              unitPrice:"单价",
+              total:"金额",
+              cardNum:"卡数",
+              comments:"备注"
+            },
+            offerDetail:{
+              name:"项目名称",
+              spec:"规格",
+              unit:"单位",
+              count:"数量",
+              unitPrice:"单价",
+              total:"金额",
+              cardNum:"卡数",
+      
+            },
+            proDetail:{
+              name:"项目名称",
+              spec:"规格",
+              unit:"单位",
+              count:"数量",
+              unitPrice:"单价",
+              total:"金额",
+           
+            }  
           },
           "offerData1":{
-            name:"项目名称1",
-            spec:"规格1",
-            unit:"单位1",
-            count:"数量1",
-            unitPrice:"单价1",
-            total:"金额1",
-            cardNum:"卡数1",
-            comments:"备注1"
+            summary:{
+              name:"项目名称",
+              spec:"规格",
+              unit:"单位",
+              count:"数量",
+              unitPrice:"单价",
+              total:"金额",
+              cardNum:"卡数",
+              comments:"备注"
+            },
+            offerData1:{
+              name:"项目名称",
+              spec:"规格",
+              unit:"单位",
+              count:"数量",
+              unitPrice:"单价",
+              total:"金额",
+              cardNum:"卡数",
+              comments:"备注"
+            },
+            proDetail:{
+              name:"项目名称",
+              spec:"规格",
+              unit:"单位",
+              count:"数量",
+              unitPrice:"单价",
+              total:"金额",
+              cardNum:"卡数",
+              comments:"备注"
+            } 
           }
         },
         // 表格数据
@@ -392,9 +445,7 @@
                   unit:"sadad",
                   count:"5",
                   unitPrice:"145",
-                  total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  total:""
                 },
                 {
                   name:"柜体2",
@@ -402,9 +453,7 @@
                   unit:"sadad",
                   count:"10",
                   unitPrice:"522",
-                  total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  total:""
                 },
                 {
                   name:"柜体3",
@@ -412,9 +461,7 @@
                   unit:"sadad",
                   count:"15",
                   unitPrice:"142",
-                  total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  total:""
                 },
                 {
                   name:"柜体4",
@@ -422,9 +469,7 @@
                   unit:"sadad",
                   count:"20",
                   unitPrice:"22",
-                  total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  total:""
                 },
                 {
                   name:"柜体5",
@@ -432,9 +477,7 @@
                   unit:"sadad",
                   count:"25",
                   unitPrice:"222",
-                  total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  total:""
                 },
                 {
                   name:"柜体6",
@@ -442,9 +485,7 @@
                   unit:"sadad",
                   count:"12",
                   unitPrice:"322",
-                  total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  total:""
                 }
               ]
             }
@@ -791,17 +832,17 @@
         let colIndex=Object.keys(this.allData[this.value].summary.data[0]).indexOf(index);
         let selectedData=this.getColData(index);
         // console.log(selectedData)
-
+        // console.log(this.$refs.tbody);
         for(let i in selectedData){
           
           if(parseFloat(selectedData[i])>refValueBig && refValueBig !==0){
-     
-            this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
+            
+            this.$refs.tbody[0].rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
           } 
           
           if(parseFloat(selectedData[i])<refValueSm && refValueSm !==0){
             
-            this.$refs.tbody.rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
+            this.$refs.tbody[0].rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
           }
         }
         
@@ -821,7 +862,7 @@
             return parseFloat(a) + parseFloat(b);
           });
           this.pageFootContent.push({
-            title:this.headerData[this.value][this.selectedIndex]+"合计：",
+            title:this.headerData[this.value].summary[this.selectedIndex]+"合计：",
             value:sum
           });
        
@@ -830,7 +871,7 @@
             return parseFloat(a) + parseFloat(b);
           })/(selectedData.length);
           this.pageFootContent.push({
-            title:this.headerData[this.value][this.selectedIndex]+"平均值：",
+            title:this.headerData[this.value].summary[this.selectedIndex]+"平均值：",
             value:avg.toFixed(2)
           })
         }
@@ -850,8 +891,8 @@
       addCol(colName){
         
           let key='newCol'+ this.col++;
-          let allData=this.allData[this.value].summary.data;
-          let headata=this.headerData[this.value];
+          let allData=this.allData[this.value][this.selectTable].data;
+          let headata=this.headerData[this.value][this.selectTable];
           // console.log(key);
           if(!colName){
             if(this.selectedIndex){
@@ -885,8 +926,8 @@
       },
       //删除列
       delCol(key){
-        let allData=this.allData[this.value].summary.data;
-        this.$delete(this.headerData[this.value],key);
+        let allData=this.allData[this.value][this.selectTable].data;
+        this.$delete(this.headerData[this.value][this.selectTable],key);
         for(let data of allData){
           this.$delete(data,key);
         } 
@@ -1054,7 +1095,9 @@
         //1.拼接标题
         rs=[];
         rs.push({title:this.settingPanelTitle});
+
         //2.拼接表头内容
+        
         let headContent={};
         //页头项
         let pHead=this.pageHead[this.value];
@@ -1071,13 +1114,19 @@
         }
         // console.log(headContent);
         rs.push(headContent);
-        rs.push({});
-        //3.拼接表头标题
+        rs.push({});//excle表格换行
         
-        rs.push(this.headerData[this.value]);
+        for(let index in this.showTable){
+        //3.拼接表头标题
+          let title={};
+          title[index]=this.showTable[index];
+          rs.push({}); //excle表格换行
+          rs.push(title); 
+          rs.push(this.headerData[this.value][index]);
 
-        //4.拼接表内容
-        rs.push(...this.allData[this.value].summary.data);
+          //4.拼接表内容
+          rs.push(...this.allData[this.value][index].data);
+        }
         //5.拼接表尾
         rs.push({title:"合计",value:this.settingData[this.value].totalPrice});
         // 6.拼接页尾
