@@ -1,11 +1,7 @@
 <template>
   <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }"> 
     <el-col :span="18">
-      <div>
-        <button @click="editHeader($event)" @keyup.enter="editHeader" class="btn btn-primary">编辑</button>
-        <button @click=" downloadFile(outputData)" id="export-table" class="btn btn-default">导出</button>
-        <a id="downlink"></a>
-      </div>
+      
       <div id="out-table" v-if="headerData[value]">
         <h1>
           {{settingPanelTitle}}
@@ -20,41 +16,51 @@
             <input type="text" v-model="pageHeadContent[value][index].name">    
           </li>
           <li>
-            <button class="btn btn-primary" @click="addHeadItem">+</button>
+            <el-button type="primary" icon="el-icon-plus" @click="addHeadItem" size="mini"></el-button>
           </li>
         </ul>
-        <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}" id="mainTable">
-          <thead ref="tHead">
-            <tr>
-              <template v-for="(item,key) in headerData[value]">        
-                <th :key="item.id" draggable="true">
-                  <span v-if="isEdit">{{item}}</span> 
-                  <input type="text" class="edit" v-model="headerData[value][key]" v-if="!isEdit">
-                  <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
-                    <span aria-hidden="true">&times;</span>
-                  </button> 
-                </th>
-              </template>
-            </tr>
-          </thead>
-          <tbody ref="tbody">
-            
-            <tr v-for="data in allData[value][0].data" :key="data.id">
-              <!-- <td v-for="item in headerData[value]" :key="item.id">{{data[getHeadKey(item)]}}</td> -->
-              <td v-for="item in data" :key="item.id">{{item}}</td>
-            </tr>
-          </tbody>
-          <tfoot v-if="allData[value][0].data">
-            <tr>
-              <td>
-                合计
-              </td>
-              <td :colspan="Object.keys(headerData[value]).length-1">
-                <span>¥{{settingData[value].totalPrice}}</span>
-              </td>
-            </tr> 
-          </tfoot> 
-        </table> 
+        <el-collapse v-model="activeTables">
+          <el-collapse-item :title="item" :name="index" v-for="(item,key,index) in showTable" :key="key">
+            <div>
+              <el-button @click="editHeader($event)" @keyup.enter="editHeader" type="primary">编辑</el-button>
+              <el-button type="danger" @click="delTable(key)">删除</el-button>
+              <el-button @click=" downloadFile(outputData)" id="export-table" type="success">导出</el-button>
+              <a id="downlink"></a>
+            </div>
+            <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}" id="mainTable">
+              <thead ref="tHead">
+                <tr>
+                  <template v-for="(item,key) in headerData[value]">        
+                    <th :key="item.id" draggable="true">
+                      <span v-if="isEdit">{{item}}</span> 
+                      <input type="text" class="edit" v-model="headerData[value][key]" v-if="!isEdit">
+                      <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
+                        <span aria-hidden="true">&times;</span>
+                      </button> 
+                    </th>
+                  </template>
+                </tr>
+              </thead>
+              <tbody ref="tbody">
+                <tr v-for="data in allData[value][key].data" :key="data.id">
+                  <!-- <td v-for="item in headerData[value]" :key="item.id">{{data[getHeadKey(item)]}}</td> -->
+                  <td v-for="item in data" :key="item.id">{{item}}</td>
+                </tr>
+              </tbody>
+              <!-- <tfoot v-if="allData[value][0].data">
+                <tr>
+                  <td>
+                    合计
+                  </td>
+                  <td :colspan="Object.keys(headerData[value]).length-1">
+                    <span>¥{{settingData[value].totalPrice}}</span>
+                  </td>
+                </tr> 
+              </tfoot>  -->
+            </table>
+          </el-collapse-item>
+        </el-collapse> 
+         
         <ul class="list-unstyled pull-right">
           <li v-for="item in pageFootContent" :key="item.id">
             {{item.title}}<span>{{item.value}}</span>
@@ -159,21 +165,15 @@
                 <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
               </el-collapse-item>
               <el-collapse-item title="添加表格" name="5">
-    
-                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
-    
+                <el-select v-model="selectTable" placeholder="请选择" style="width:130px">
                   <el-option
-                    v-for="(item,key) in headerData[value]"
-                    :key="item.id"
+                    v-for="(item,key) in tableType"
+                    :key="key"
                     :label="item"
                     :value="key">
                   </el-option>
                 </el-select>
-                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:130px">
-                  <el-option label="合计" :value="0"></el-option>
-                  <el-option label="平均" :value="1"></el-option>
-                </el-select>
-                <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
+                <el-button icon="el-icon-plus" @click="addTableType"></el-button>
               </el-collapse-item>
             </el-collapse>
           
@@ -221,6 +221,7 @@
         }, 
         //切换手风琴列表
         activeNames: ['1'],
+        activeTables:['0'],
         // 设置面板标题
         settingPanelTitle:"",
         col:1,
@@ -251,8 +252,8 @@
         },
         // 表格数据
         allData:{
-          "offerData":[
-            { 
+          "offerData":{
+            summary:{ 
               title:"报价汇总",
               data:[
                 {
@@ -317,7 +318,7 @@
                 }
               ]
             },
-            { 
+            offerDetail:{ 
               title:"报价明细",
               data:[
                 {
@@ -327,8 +328,8 @@
                   count:"5",
                   unitPrice:"145",
                   total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  cardNum:5
+                
                 },
                 {
                   name:"柜体2",
@@ -337,8 +338,8 @@
                   count:"10",
                   unitPrice:"522",
                   total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  cardNum:5
+                 
                 },
                 {
                   name:"柜体3",
@@ -347,8 +348,8 @@
                   count:"15",
                   unitPrice:"142",
                   total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  cardNum:5
+                 
                 },
                 {
                   name:"柜体4",
@@ -357,8 +358,8 @@
                   count:"20",
                   unitPrice:"22",
                   total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  cardNum:5
+                
                 },
                 {
                   name:"柜体5",
@@ -367,8 +368,8 @@
                   count:"25",
                   unitPrice:"222",
                   total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  cardNum:5
+               
                 },
                 {
                   name:"柜体6",
@@ -377,12 +378,12 @@
                   count:"12",
                   unitPrice:"322",
                   total:"",
-                  cardNum:5,
-                  comments:"大师大师多撒好低"
+                  cardNum:5
+            
                 }
               ]
             },
-            { 
+            proDetail:{ 
               title:"产品明细",
               data:[
                 {
@@ -447,69 +448,204 @@
                 }
               ]
             }
-          ],
-          "offerData1":[
-            {
-              name:"边框1",
-              spec:"sasd",
-              unit:"sadad",
-              count:12,
-              unitPrice:"14522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
+          },
+          "offerData1":{
+            summary:{ 
+              title:"报价汇总",
+              data:[
+                {
+                  name:"柜体1",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"5",
+                  unitPrice:"145",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体2",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"10",
+                  unitPrice:"522",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体3",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"15",
+                  unitPrice:"142",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体4",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"20",
+                  unitPrice:"22",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体5",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"25",
+                  unitPrice:"222",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体6",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"12",
+                  unitPrice:"322",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                }
+              ]
             },
-            {
-              name:"边框2",
-              spec:"sasd",
-              unit:"sadad",
-              count:12,
-              unitPrice:"14522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
+            offerDetail:{ 
+              title:"报价明细",
+              data:[
+                {
+                  name:"柜体1",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"5",
+                  unitPrice:"145",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体2",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"10",
+                  unitPrice:"522",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体3",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"15",
+                  unitPrice:"142",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体4",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"20",
+                  unitPrice:"22",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体5",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"25",
+                  unitPrice:"222",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体6",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"12",
+                  unitPrice:"322",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                }
+              ]
             },
-            {
-              name:"边框3",
-              spec:"sasd",
-              unit:"sadad",
-              count:12,
-              unitPrice:"14522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
-            },
-            {
-              name:"边框4",
-              spec:"sasd",
-              unit:"sadad",
-              count:12,
-              unitPrice:"14522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
-            },
-            {
-              name:"边框5",
-              spec:"sasd",
-              unit:"sadad",
-              count:12,
-              unitPrice:"14522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
-            },
-            {
-              name:"边框6",
-              spec:"sasd",
-              unit:"sadad",
-              count:12,
-              unitPrice:"14522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
+            proDetail:{ 
+              title:"产品明细",
+              data:[
+                {
+                  name:"柜体1",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"5",
+                  unitPrice:"145",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体2",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"10",
+                  unitPrice:"522",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体3",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"15",
+                  unitPrice:"142",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体4",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"20",
+                  unitPrice:"22",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体5",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"25",
+                  unitPrice:"222",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体6",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"12",
+                  unitPrice:"322",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                }
+              ]
             }
-          ]
+          }
         },
         //页头部分
         pageHead:{
@@ -615,8 +751,11 @@
         value: 'offerData', //选择的表格
         outputData:[], // 导出的数据
         outFile: '',  // 导出文件el
-        cloneHead:{}//克隆的表头
- 
+        cloneHead:{},//克隆的表头
+        tableType:{}, //表种类
+        showTable:{summary:"报价汇总"},
+        selectAllData:null, //当前选中的表 
+        selectTable:""
       };
     },
     methods: {
@@ -637,7 +776,7 @@
       //获得对应列数据
       getColData(index){
         let selectedData=[];
-        let allData=this.allData[this.value][0].data;
+        let allData=this.allData[this.value].summary.data;
         for(let data of allData){
           selectedData.push(data[index]);
         }
@@ -649,7 +788,7 @@
       showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
 
         //所选中的表项在第几列
-        let colIndex=Object.keys(this.allData[this.value][0].data[0]).indexOf(index);
+        let colIndex=Object.keys(this.allData[this.value].summary.data[0]).indexOf(index);
         let selectedData=this.getColData(index);
         // console.log(selectedData)
 
@@ -711,7 +850,7 @@
       addCol(colName){
         
           let key='newCol'+ this.col++;
-          let allData=this.allData[this.value][0].data;
+          let allData=this.allData[this.value].summary.data;
           let headata=this.headerData[this.value];
           // console.log(key);
           if(!colName){
@@ -746,7 +885,7 @@
       },
       //删除列
       delCol(key){
-        let allData=this.allData[this.value][0].data;
+        let allData=this.allData[this.value].summary.data;
         this.$delete(this.headerData[this.value],key);
         for(let data of allData){
           this.$delete(data,key);
@@ -756,71 +895,76 @@
       // 拖拽列函数
       dragCol(){
         // 获取th集合
+        
         if(this.$refs.tHead){
-          let ths=this.$refs.tHead.querySelectorAll("table>thead th");
-          // 阻止拖拽的默认行为
-          this.$refs.tHead.ondragover=function(e){
-            // console.log("dragover");
-            e.preventDefault();
-          }
-          this.$refs.tHead.ondragstart=function(e){
-            // console.log("start");
-
-            //储存所拿起的th元素下标
-            e.dataTransfer.setData("obj_add",e.target.cellIndex);
-          }
-          // 放置元素事件
-          this.$refs.tHead.ondrop=function(e){
-            e.preventDefault;    
-            var i = parseInt(e.dataTransfer.getData("obj_add"));//所拿起的th列下标  
-            // console.log(i);  
-            var d = e.target.cellIndex;//被放入的列下标
-
-            var _t = e.target; //目前拿起的元素  
-            // console.log(_t);
-            for(var th of ths){
-
-                //要被交换位置的元素th  
-                if(th.cellIndex == i){   
-                  //拿起元素和要被放置的元素下标一致，交换位置,判断往前还是往后
-                  if(th.cellIndex>_t.cellIndex){
-                    th.parentNode.insertBefore(th,_t);
-                  }else{
-                    th.parentNode.insertBefore(th,_t.nextElementSibling);
-                  }
-                }  
-            } 
-            let trs =document.querySelectorAll("table>tbody>tr");
-            // console.log(trs);
-            for(let tr of trs){
-
-              let drag=""; //拿起的td
-              let drop=""; //放下的td
-              let tds=tr.children;
-
-              // console.log(tds);
-              for(let td of tds){
-                
-                if(td.cellIndex == i){ 
-                    // console.log(td); 
-                    drag = td;  
-                }  
-                if(td.cellIndex == d){ 
-                    // console.log(td);  
-                    drop = td;  
-                } 
-                
-              }
-              if(drag != undefined && drop != undefined && drag != "" && drop != ""){  
-                // console.log(drag.parentNode);
-                if(drag.cellIndex>drop.cellIndex){
-                  drag.parentNode.insertBefore(drag,drop); 
-                }else{
-                  drag.parentNode.insertBefore(drag,drop.nextElementSibling); 
-                }
-                
-              } 
+          for(let el of this.$refs.tHead){
+         
+            let ths=el.querySelectorAll("th");
+            // 阻止拖拽的默认行为
+            el.ondragover=function(e){
+              // console.log(el,"dragover");
+              e.preventDefault();
             }
+            el.ondragstart=function(e){
+              // console.log("start");
+              //储存所拿起的th元素下标
+              e.dataTransfer.setData("obj_add",e.target.cellIndex);
+            }
+            // 放置元素事件
+            el.addEventListener("drop",function(e){
+              e.preventDefault;    
+              var i = parseInt(e.dataTransfer.getData("obj_add"));//所拿起的th列下标  
+              // console.log(i);  
+              var d = e.target.cellIndex;//被放入的列下标
+
+              var _t = e.target; //目前拿起的元素  
+              // console.log(_t);
+              for(var th of ths){
+                  //要被交换位置的元素th  
+                  if(th.cellIndex == i && e.target.parentNode.nodeName=="TR"){   
+                    //拿起元素和要被放置的元素下标一致，交换位置,判断往前还是往后
+
+                    if(th.cellIndex>_t.cellIndex){
+                      // console.log(th);
+                      // console.log(e.target.parentNode.nodeName);
+                      e.target.parentNode.insertBefore(th,_t);
+                    }else{
+                      e.target.parentNode.insertBefore(th,_t.nextElementSibling);
+                    }
+                  }  
+              } 
+              let trs =el.parentNode.querySelectorAll("tbody>tr");
+              // console.log(trs);
+              for(let tr of trs){
+
+                let drag=""; //拿起的td
+                let drop=""; //放下的td
+                let tds=tr.children;
+
+                // console.log(tds);
+                for(let td of tds){
+                  
+                  if(td.cellIndex == i){ 
+                      // console.log(td); 
+                      drag = td;  
+                  }  
+                  if(td.cellIndex == d){ 
+                      // console.log(td);  
+                      drop = td;  
+                  } 
+                  
+                }
+                if(drag != undefined && drop != undefined && drag != "" && drop != ""){  
+                  // console.log(drag.parentNode);
+                  if(drag.cellIndex>drop.cellIndex){
+                    drag.parentNode.insertBefore(drag,drop); 
+                  }else{
+                    drag.parentNode.insertBefore(drag,drop.nextElementSibling); 
+                  }
+                  
+                } 
+              }
+            },false)
           }
         }
       },
@@ -843,7 +987,8 @@
       // 计算总额
       caclTotal(){
         for(let key in this.allData){
-          for(let data of this.allData[key][0].data){
+     
+          for(let data of this.allData[key].summary.data){
             data.total=data.unitPrice*data.count;
             this.settingData[key].totalPrice+=parseFloat(data.total);
           }
@@ -852,54 +997,56 @@
       //拖动改变表格宽度
       changeColWidth(){
         let tTD={}; //用来存储当前更改宽度的Table Cell   
-        let table = this.$refs.content;
-        if(!table){
-          table=document.getElementById("mainTable");
-        }
-        // console.log(table);
-        //因为与拖拽的事件冲突，改变宽度目标元素放在tbody行上
-        let tr=table.rows[1];  
-        for (let j = 0; j < tr.cells.length; j++) {  
-        
-          tr.cells[j].onmousedown = function () {   
-            //记录单元格  
-            tTD = this;   
-            if (event.offsetX > tTD.offsetWidth - 10) {   
-              tTD.mouseDown = true;   
-              tTD.oldX = event.x;   
-              tTD.oldWidth = tTD.offsetWidth;   
-            }    
-          };   
-          tr.cells[j].onmouseup = function () {   
-            //结束宽度调整   
-            if (tTD == undefined) tTD = this;   
-            tTD.mouseDown = false;   
-            tTD.style.cursor = 'default';   
-          };   
-          tr.cells[j].onmousemove = function () {   
-            //更改鼠标样式   
-            if (event.offsetX > this.offsetWidth - 10)   
-              this.style.cursor = 'col-resize';   
-            else   
-              this.style.cursor = 'default';   
-            //取出暂存的Table Cell   
-            if (tTD == undefined) tTD = this;   
-            //调整宽度   
-            if (tTD.mouseDown) {   
+        let tables = this.$refs.content;
+        for(let table of tables){
+          if(!table){
+            table=document.getElementById("mainTable");
+          }
+          // console.log(table);
+          //因为与拖拽的事件冲突，改变宽度目标元素放在tbody行上
+          let tr=table.rows[1];  
+          for (let j = 0; j < tr.cells.length; j++) {  
+          
+            tr.cells[j].onmousedown = function () {   
+              //记录单元格  
+              tTD = this;   
+              if (event.offsetX > tTD.offsetWidth - 10) {   
+                tTD.mouseDown = true;   
+                tTD.oldX = event.x;   
+                tTD.oldWidth = tTD.offsetWidth;   
+              }    
+            };   
+            tr.cells[j].onmouseup = function () {   
+              //结束宽度调整   
+              if (tTD == undefined) tTD = this;   
+              tTD.mouseDown = false;   
               tTD.style.cursor = 'default';   
-              if (tTD.oldWidth + (event.x - tTD.oldX)>0)  
-                tTD.width = tTD.oldWidth + (event.x - tTD.oldX);   
-              //调整列宽   
-              tTD.style.width = tTD.width;   
-              tTD.style.cursor = 'col-resize';   
-              //调整该列中的每个Cell 
-              for (j = 0; j < table.rows.length-1; j++) {  
-                table.rows[j].cells[tTD.cellIndex].width = tTD.width;   
+            };   
+            tr.cells[j].onmousemove = function () {   
+              //更改鼠标样式   
+              if (event.offsetX > this.offsetWidth - 10)   
+                this.style.cursor = 'col-resize';   
+              else   
+                this.style.cursor = 'default';   
+              //取出暂存的Table Cell   
+              if (tTD == undefined) tTD = this;   
+              //调整宽度   
+              if (tTD.mouseDown) {   
+                tTD.style.cursor = 'default';   
+                if (tTD.oldWidth + (event.x - tTD.oldX)>0)  
+                  tTD.width = tTD.oldWidth + (event.x - tTD.oldX);   
+                //调整列宽   
+                tTD.style.width = tTD.width;   
+                tTD.style.cursor = 'col-resize';   
+                //调整该列中的每个Cell 
+                for (j = 0; j < table.rows.length-1; j++) {  
+                  table.rows[j].cells[tTD.cellIndex].width = tTD.width;   
+                }   
+                
               }   
-              
-            }   
-          };   
-        }   
+            };   
+          } 
+        }  
       },
       // 导出功能
       downloadFile(rs) { // 点击导出按钮
@@ -930,7 +1077,7 @@
         rs.push(this.headerData[this.value]);
 
         //4.拼接表内容
-        rs.push(...this.allData[this.value][0].data);
+        rs.push(...this.allData[this.value].summary.data);
         //5.拼接表尾
         rs.push({title:"合计",value:this.settingData[this.value].totalPrice});
         // 6.拼接页尾
@@ -1060,6 +1207,26 @@
         }
         // console.log(newHead);
         return newHead[key];
+      },
+      // 获取表格类型数据
+      getTableType(){
+        this.tableType={};
+        let allData=this.allData[this.value];
+        
+        for (let index in allData){
+          let tmpObj={};
+          this.tableType[index]=allData[index].title;
+        }
+      },
+      addTableType(){
+
+        if(this.selectTable){
+          this.$set(this.showTable,this.selectTable,this.tableType[this.selectTable]);
+        }
+      },
+      delTable(key){
+        // console.log(key);
+        this.$delete(this.showTable,key);
       }
     },
     mounted(){
@@ -1069,6 +1236,7 @@
       this.caclTotal();
       this.onTableSelect();
       this.outFile = document.getElementById('downlink');
+      this.getTableType();
     },
     updated(){
       //改变表头位置
@@ -1093,8 +1261,8 @@
 /* 表格样式 start */
   table{
     table-layout: fixed;
-    margin-top: 3rem;
     width:100%;
+    margin-top:2.5rem; 
   }
   table th{
     height:4rem;
