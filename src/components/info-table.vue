@@ -38,12 +38,13 @@
             </tr>
           </thead>
           <tbody ref="tbody">
-            <tr v-for="data in allData[value]" :key="data.id">
+            
+            <tr v-for="data in allData[value][0].data" :key="data.id">
               <!-- <td v-for="item in headerData[value]" :key="item.id">{{data[getHeadKey(item)]}}</td> -->
               <td v-for="item in data" :key="item.id">{{item}}</td>
             </tr>
           </tbody>
-          <tfoot v-if="allData[value]">
+          <tfoot v-if="allData[value][0].data">
             <tr>
               <td>
                 合计
@@ -157,6 +158,23 @@
                 </el-select>
                 <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
               </el-collapse-item>
+              <el-collapse-item title="添加表格" name="5">
+    
+                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
+    
+                  <el-option
+                    v-for="(item,key) in headerData[value]"
+                    :key="item.id"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select>
+                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:130px">
+                  <el-option label="合计" :value="0"></el-option>
+                  <el-option label="平均" :value="1"></el-option>
+                </el-select>
+                <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
+              </el-collapse-item>
             </el-collapse>
           
           </div>
@@ -169,6 +187,7 @@
 </template>
 
 <script>
+
   import XLSX from 'xlsx';
 
   export default {
@@ -233,65 +252,200 @@
         // 表格数据
         allData:{
           "offerData":[
-            {
-              name:"柜体1",
-              spec:"sasd",
-              unit:"sadad",
-              count:"5",
-              unitPrice:"145",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
+            { 
+              title:"报价汇总",
+              data:[
+                {
+                  name:"柜体1",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"5",
+                  unitPrice:"145",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体2",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"10",
+                  unitPrice:"522",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体3",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"15",
+                  unitPrice:"142",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体4",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"20",
+                  unitPrice:"22",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体5",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"25",
+                  unitPrice:"222",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体6",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"12",
+                  unitPrice:"322",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                }
+              ]
             },
-            {
-              name:"柜体2",
-              spec:"sasd",
-              unit:"sadad",
-              count:"10",
-              unitPrice:"522",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
+            { 
+              title:"报价明细",
+              data:[
+                {
+                  name:"柜体1",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"5",
+                  unitPrice:"145",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体2",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"10",
+                  unitPrice:"522",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体3",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"15",
+                  unitPrice:"142",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体4",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"20",
+                  unitPrice:"22",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体5",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"25",
+                  unitPrice:"222",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体6",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"12",
+                  unitPrice:"322",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                }
+              ]
             },
-            {
-              name:"柜体3",
-              spec:"sasd",
-              unit:"sadad",
-              count:"15",
-              unitPrice:"142",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
-            },
-            {
-              name:"柜体4",
-              spec:"sasd",
-              unit:"sadad",
-              count:"20",
-              unitPrice:"22",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
-            },
-            {
-              name:"柜体5",
-              spec:"sasd",
-              unit:"sadad",
-              count:"25",
-              unitPrice:"222",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
-            },
-            {
-              name:"柜体6",
-              spec:"sasd",
-              unit:"sadad",
-              count:"12",
-              unitPrice:"322",
-              total:"",
-              cardNum:5,
-              comments:"大师大师多撒好低"
+            { 
+              title:"产品明细",
+              data:[
+                {
+                  name:"柜体1",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"5",
+                  unitPrice:"145",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体2",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"10",
+                  unitPrice:"522",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体3",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"15",
+                  unitPrice:"142",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体4",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"20",
+                  unitPrice:"22",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体5",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"25",
+                  unitPrice:"222",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                },
+                {
+                  name:"柜体6",
+                  spec:"sasd",
+                  unit:"sadad",
+                  count:"12",
+                  unitPrice:"322",
+                  total:"",
+                  cardNum:5,
+                  comments:"大师大师多撒好低"
+                }
+              ]
             }
           ],
           "offerData1":[
@@ -465,14 +619,6 @@
  
       };
     },
-    watch:{
-      headerData:{
-        handler:function(val,oldValue){
-          // console.log(val,oldValue)
-        },
-        deep:true
-      }
-    },
     methods: {
       // 选择表格
       onTableSelect(){ 
@@ -491,7 +637,8 @@
       //获得对应列数据
       getColData(index){
         let selectedData=[];
-        for(let data of this.allData[this.value]){
+        let allData=this.allData[this.value][0].data;
+        for(let data of allData){
           selectedData.push(data[index]);
         }
  
@@ -500,9 +647,9 @@
       },
       // 筛选高亮方法
       showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
-        
+
         //所选中的表项在第几列
-        let colIndex=Object.keys(this.allData[this.value][0]).indexOf(index);
+        let colIndex=Object.keys(this.allData[this.value][0].data[0]).indexOf(index);
         let selectedData=this.getColData(index);
         // console.log(selectedData)
 
@@ -564,7 +711,7 @@
       addCol(colName){
         
           let key='newCol'+ this.col++;
-          let allData=this.allData[this.value];
+          let allData=this.allData[this.value][0].data;
           let headata=this.headerData[this.value];
           // console.log(key);
           if(!colName){
@@ -585,12 +732,12 @@
             let colIndex=Object.keys(allData[0]).indexOf(this.selectedIndex);
             //获取列数据
             let selectedData=this.getColData(this.selectedIndex);
-            console.log(selectedData);
+            
             for(let index in allData){
               
               this.$set(allData[index],key,selectedData[index])
             }
-            console.log(allData);
+            
           }else{
             for(let index in allData){
               this.$set(allData[index],key,"")
@@ -599,8 +746,9 @@
       },
       //删除列
       delCol(key){
+        let allData=this.allData[this.value][0].data;
         this.$delete(this.headerData[this.value],key);
-        for(let data of this.allData[this.value]){
+        for(let data of allData){
           this.$delete(data,key);
         } 
       },
@@ -695,9 +843,8 @@
       // 计算总额
       caclTotal(){
         for(let key in this.allData){
-          for(let data of this.allData[key]){
+          for(let data of this.allData[key][0].data){
             data.total=data.unitPrice*data.count;
-            // console.log(data.total);
             this.settingData[key].totalPrice+=parseFloat(data.total);
           }
         }
@@ -783,7 +930,7 @@
         rs.push(this.headerData[this.value]);
 
         //4.拼接表内容
-        rs.push(...this.allData[this.value]);
+        rs.push(...this.allData[this.value][0].data);
         //5.拼接表尾
         rs.push({title:"合计",value:this.settingData[this.value].totalPrice});
         // 6.拼接页尾
@@ -835,7 +982,7 @@
         })
         // console.log(tmpdata);
         let outputPos = Object.keys(tmpdata) ; // 设置区域,比如表格从A1到D10
-        console.log( tmpdata["A8"]);
+        // console.log( tmpdata["A8"]);
         tmpdata["A8"].s = { font: { sz: 14, bold: true, color: { rgb: "FFFFAA00" } }, fill: { bgColor: { indexed: 64 }, fgColor: { rgb: "FFFF00" } } };//<====设置xlsx单元格样式
         tmpdata["!merges"] = [{
                 s: { c: 0, r: 0 },
