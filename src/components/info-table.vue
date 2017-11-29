@@ -87,7 +87,10 @@
           </div>
           <div id="setting">
             <el-collapse v-model="activeNames" >
-              <el-collapse-item title="格式设置" name="1">
+              <el-collapse-item name="1" >
+                <template slot="title">
+                  <span>格式设置</span>
+                </template>
                 <div>
                   <label for="">字体大小:</label>
                   <el-input-number v-model="settingData[value].fontSize" :min="0" size="small" label="字体大小"></el-input-number>
