@@ -20,7 +20,7 @@
           </li>
         </ul>
         <el-collapse v-model="activeTables">
-          <el-collapse-item :title="item" :name="index" v-for="(item,key,index) in showTable" :key="key">
+          <el-collapse-item :title="item" :name="index" v-for="(item,key,index) in showTable" :key="key" draggable="true">
             <div>
               <el-button @click="editHeader($event)" @keyup.enter="editHeader" type="primary">编辑</el-button>
               <el-button type="danger" @click="delTable(key)">删除</el-button>
@@ -85,9 +85,9 @@
              <el-button class="pull-right" @click="downloadFile(outputData)" id="export-table" type="success" size="mini">导出</el-button>
              <a id="downlink"></a>
           </div>
-          <div id="setting">
+          <div id="setting" ref="setting">
             <el-collapse v-model="activeNames" >
-              <el-collapse-item name="1" >
+              <el-collapse-item name="1" draggable="true">
                 <template slot="title">
                   <span>格式设置</span>
                 </template>
@@ -116,7 +116,7 @@
                   </el-switch>
                 </div>
               </el-collapse-item>
-              <el-collapse-item title="显示设置" name="2"> 
+              <el-collapse-item title="显示设置" name="2" draggable="true"> 
                 <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
                   <el-option
                     v-for="(item,key) in headerData[value].summary"
@@ -137,7 +137,7 @@
                 </div>
                 <el-button type="primary" @click="addShowRules">添加规则</el-button>
               </el-collapse-item>
-              <el-collapse-item title="添加表格" name="5">
+              <el-collapse-item title="添加表格" name="5" draggable="true">
                 <el-select v-model="selectTable" placeholder="请选择" style="width:130px">
                   <el-option
                     v-for="(item,key) in tableType"
@@ -148,7 +148,7 @@
                 </el-select>
                 <el-button icon="el-icon-plus" @click="addTableType"></el-button>
               </el-collapse-item>
-              <el-collapse-item title="添加列" name="3">
+              <el-collapse-item title="添加列" name="3" draggable="true">
                 <el-input placeholder="请输入内容" v-model="newColName" >
                   <el-select slot="prepend" v-model="selectTable" placeholder="请选择" style="width:130px">
                     <el-option
@@ -170,7 +170,7 @@
                   <el-button slot="append" icon="el-icon-plus" @click="addCol(newColName)"></el-button>
                 </el-input>
               </el-collapse-item>
-              <el-collapse-item title="添加统计" name="4">
+              <el-collapse-item title="添加统计" name="4" draggable="true">
     
                 <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
     
@@ -809,12 +809,11 @@
       },
       //选择表头项
       onTheadSelect(){
-      // console.log(this.settingData[this.value].headValue);
+      
         //被选中的表项
         this.selectedIndex=this.settingData[this.value].headValue;
       },
       onCaclSelect(){
-
         this.selectedIndex=this.settingData[this.value].headValue;
       },
       //获得对应列数据
@@ -1279,6 +1278,39 @@
       delTable(key){
         // console.log(key);
         this.$delete(this.showTable,key);
+      },
+      //拖拽设置面板
+      dragSettingPanel(){
+        // console.log()
+        //获得设置面板对象
+        let Panels=document.querySelectorAll(".el-collapse");
+        // console.log(setPanel)
+        // 拿起的元素
+        let dragElem={};
+        // console.log(setPanel)
+        Panels.forEach((item)=>{
+          //消除拖拽默认行为
+          item.ondragover=function(e){
+            // console.log("dragover")
+            e.preventDefault();
+          }
+          item.ondragstart=function(e){
+            // console.log("start");
+            //储存所拿起的元素
+            dragElem=e.target;
+          }
+          item.ondrop=function(e){
+            //储存放入的目标元素
+            let dropElem=e.target;
+
+            while(dropElem.className != "el-collapse-item" && dropElem.className != "el-collapse-item is-active"){
+              dropElem=dropElem.parentNode;
+            }
+            // console.log(dropElem); 
+            this.insertBefore(dragElem,dropElem);
+          }
+        })
+        
       }
     },
     mounted(){
@@ -1289,6 +1321,7 @@
       this.onTableSelect();
       this.outFile = document.getElementById('downlink');
       this.getTableType();
+      this.dragSettingPanel();
     },
     updated(){
       //改变表头位置
