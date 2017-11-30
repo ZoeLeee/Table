@@ -119,7 +119,15 @@
                   </el-switch>
                 </div>
               </el-collapse-item>
-              <el-collapse-item title="显示设置" name="2" draggable="true"> 
+              <el-collapse-item title="显示设置" name="2" draggable="true">
+                <el-select v-model="selectTable" placeholder="请选择" style="width:100px">
+                  <el-option
+                    v-for="(item,key) in showTable"
+                    :key="key"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select> 
                 <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
                   <el-option
                     v-for="(item,key) in headerData[value].summary"
@@ -183,7 +191,6 @@
                   </el-option>
                 </el-select>
                 <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:100px">
-    
                   <el-option
                     v-for="(item,key) in headerData[value].summary"
                     :key="item.id"
@@ -833,7 +840,7 @@
       //获得对应列数据
       getColData(index){
         let selectedData=[];
-        let allData=this.allData[this.value][selectTable].data;
+        let allData=this.allData[this.value][this.selectTable].data;
         for(let data of allData){
           selectedData.push(data[index]);
         }
@@ -845,34 +852,36 @@
       showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
 
         //所选中的表项在第几列
-        let colIndex=Object.keys(this.allData[this.value].summary.data[0]).indexOf(index);
+        let colIndex=Object.keys(this.allData[this.value][this.selectTable].data[0]).indexOf(index);
         let selectedData=this.getColData(index);
-        // console.log(selectedData)
-        // console.log(this.$refs.tbody);
+        //第几张表
+        let n=Object.keys(this.showTable).indexOf(this.selectTable);
+        //给选中列添加规则样式
         for(let i in selectedData){
           
           if(parseFloat(selectedData[i])>refValueBig && refValueBig !==0){
             
-            this.$refs.tbody[0].rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
+            this.$refs.tbody[n].rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
           } 
           
           if(parseFloat(selectedData[i])<refValueSm && refValueSm !==0){
             
-            this.$refs.tbody[0].rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
+            this.$refs.tbody[n].rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
           }
         }
         
       },
       addShowRules(){
-       
+        //添加规则
         this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor,this.ltRefValue,this.settingData[this.value].ltBGColor); 
       },
       //添加自定义统计
       addCaclCol(){
-        
+        //获取列数据
         let selectedData=this.getColData(this.selectedIndex);
         let sum=0;//存储和
         let avg=0;//存储平均值
+        //0-合计 1-平均值
         if(this.caclType== 0){
           sum = selectedData.reduce(function (a, b) {
             return parseFloat(a) + parseFloat(b);
@@ -982,7 +991,7 @@
 
                     if(th.cellIndex>_t.cellIndex){
                       // console.log(th);
-                      // console.log(e.target.parentNode.nodeName);
+                      console.log(e.target);
                       e.target.parentNode.insertBefore(th,_t);
                     }else{
                       e.target.parentNode.insertBefore(th,_t.nextElementSibling);
@@ -1026,7 +1035,7 @@
       },
       //双击编辑事件
       editItem(i){
-        // console.log(i);
+        
         this.pageHead[this.value][i].isEdit= !this.pageHead[this.value][i].isEdit;
       },
       //增加页头项
@@ -1310,6 +1319,10 @@
           item.ondragstart=function(e){
             // console.log("start");
             //储存所拿起的元素
+            if(e.target.nodeName == "TH"){
+              return;
+            }
+            
             dragElem=e.target;
           }
           item.ondrop=function(e){
