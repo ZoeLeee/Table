@@ -1,7 +1,6 @@
 <template>
   <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }"> 
     <el-col :span="18">
-     
       <div id="out-table" v-if="headerData[value]">
         <h1>
           {{settingPanelTitle}}
@@ -46,14 +45,18 @@
                   <td v-for="item in data" :key="item.id">{{item}}</td>
                 </tr>
               </tbody>
-              <tfoot v-if="allData[value][key].data">
+              <tfoot>
                 <tr>
-                  <td>
+                  <!-- <td>
                     合计
                   </td>
                   <td :colspan="Object.keys(headerData[value][key]).length-1">
                     <span>¥{{settingData[value].totalPrice}}</span>
-                  </td>
+                  </td> -->
+                  <template v-for="(item,index) in pageFootContent[key]">
+                    <td :key="index">{{item.title}}</td>
+                    <td :key="index">{{item.value}}</td>
+                  </template>  
                 </tr> 
               </tfoot>
             </table>
@@ -61,7 +64,7 @@
         </el-collapse> 
          
         <ul class="list-unstyled pull-right">
-          <li v-for="item in pageFootContent" :key="item.id">
+          <li v-for="item in pageFootContent[selectTable]" :key="item.id">
             {{item.title}}<span>{{item.value}}</span>
           </li>
         </ul>
@@ -171,8 +174,15 @@
                 </el-input>
               </el-collapse-item>
               <el-collapse-item title="添加统计" name="4" draggable="true">
-    
-                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:130px">
+                <el-select v-model="selectTable" placeholder="请选择" style="width:100px">
+                  <el-option
+                    v-for="(item,key) in showTable"
+                    :key="key"
+                    :label="item"
+                    :value="key">
+                  </el-option>
+                </el-select>
+                <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onCaclSelect" style="width:100px">
     
                   <el-option
                     v-for="(item,key) in headerData[value].summary"
@@ -181,7 +191,7 @@
                     :value="key">
                   </el-option>
                 </el-select>
-                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:130px">
+                <el-select placeholder="请选择" v-model="caclType" @change="onCaclSelect" style="width:100px">
                   <el-option label="合计" :value="0"></el-option>
                   <el-option label="平均" :value="1"></el-option>
                 </el-select>
@@ -234,7 +244,7 @@
         }, 
         //切换手风琴列表
         activeNames: ['1'],
-        activeTables:['0'],
+        activeTables:[0],
         // 设置面板标题
         settingPanelTitle:"",
         col:1,
@@ -790,7 +800,11 @@
           }
         },
         //页尾内容
-        pageFootContent:[],
+        pageFootContent:{
+          summary:[],
+          offerDetail:[],
+          proDetail:[]
+        },
         currentPageHead:"",
         value: 'offerData', //选择的表格
         outputData:[], // 导出的数据
@@ -819,7 +833,7 @@
       //获得对应列数据
       getColData(index){
         let selectedData=[];
-        let allData=this.allData[this.value].summary.data;
+        let allData=this.allData[this.value][selectTable].data;
         for(let data of allData){
           selectedData.push(data[index]);
         }
@@ -863,17 +877,16 @@
           sum = selectedData.reduce(function (a, b) {
             return parseFloat(a) + parseFloat(b);
           });
-          this.pageFootContent.push({
-            title:this.headerData[this.value].summary[this.selectedIndex]+"合计：",
+          this.pageFootContent[this.selectTable].push({
+            title:this.headerData[this.value][this.selectTable][this.selectedIndex]+"合计：",
             value:sum
           });
-       
         }else if(this.caclType==1){
           avg=selectedData.reduce(function (a, b) {
             return parseFloat(a) + parseFloat(b);
           })/(selectedData.length);
-          this.pageFootContent.push({
-            title:this.headerData[this.value].summary[this.selectedIndex]+"平均值：",
+          this.pageFootContent[this.selectTable].push({
+            title:this.headerData[this.value][this.selectTable][this.selectedIndex]+"平均值：",
             value:avg.toFixed(2)
           })
         }
