@@ -1,5 +1,5 @@
 <template>
-  <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }"> 
+  <el-row :style="{ fontSize: settingData[value].fontSize + 'px' }">
     <el-col :span="18">
       <div id="out-table" v-if="headerData[value]">
         <h1>
@@ -9,10 +9,10 @@
           <li v-for="(item,index) in pageHead[value]" :key="item.id">
             <button type="button" class="close" aria-label="Close" v-if="item.isEdit" @click="delItem(index)">
               <span aria-hidden="true">&times;</span>
-            </button> 
+            </button>
             <span @dblclick="editItem(index)" v-if="!item.isEdit">{{item.name}}</span>
-            <input type="text" class="edit" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)"> 
-            <input type="text" v-model="pageHeadContent[value][index].name">    
+            <input type="text" class="edit" v-model="item.name" v-if="item.isEdit" @keyup.enter="editItem(index)">
+            <input type="text" v-model="pageHeadContent[value][index].name">
           </li>
           <li>
             <el-button type="primary" icon="el-icon-plus" @click="addHeadItem" size="mini"></el-button>
@@ -23,18 +23,18 @@
             <div>
               <el-button @click="editHeader($event)" @keyup.enter="editHeader" type="primary">编辑</el-button>
               <el-button type="danger" @click="delTable(key)">删除</el-button>
-             
+
             </div>
             <table class="table" ref="content" :class="{'table-bordered':settingData[value].isBorder,'table-striped':settingData[value].isstriped}" id="mainTable">
               <thead ref="tHead">
                 <tr>
-                  <template v-for="(item,key1 ) in headerData[value][key]">        
+                  <template v-for="(item,key1 ) in headerData[value][key]">
                     <th :key="item.id" draggable="true">
-                      <span v-if="isEdit">{{item}}</span> 
+                      <span v-if="isEdit">{{item}}</span>
                       <input type="text" class="edit" v-model="headerData[value][key][key1]" v-if="!isEdit">
                       <button type="button" class="close" aria-label="Close" @click="delCol(key)" v-if="!isEdit">
                         <span aria-hidden="true">&times;</span>
-                      </button> 
+                      </button>
                     </th>
                   </template>
                 </tr>
@@ -56,13 +56,13 @@
                   <template v-for="(item,index) in pageFootContent[key]">
                     <td :key="index">{{item.title}}</td>
                     <td :key="index">{{item.value}}</td>
-                  </template>  
-                </tr> 
+                  </template>
+                </tr>
               </tfoot>
             </table>
           </el-collapse-item>
-        </el-collapse> 
-         
+        </el-collapse>
+
         <ul class="list-unstyled pull-right">
           <li v-for="item in pageFootContent[selectTable]" :key="item.id">
             {{item.title}}<span>{{item.value}}</span>
@@ -127,7 +127,7 @@
                     :label="item"
                     :value="key">
                   </el-option>
-                </el-select> 
+                </el-select>
                 <el-select v-model="settingData[value].headValue" placeholder="请选择" @change="onTheadSelect">
                   <el-option
                     v-for="(item,key) in headerData[value].summary"
@@ -204,16 +204,16 @@
                 </el-select>
                 <el-button icon="el-icon-plus" @click="addCaclCol"></el-button>
               </el-collapse-item>
-              
+
             </el-collapse>
-          
+
           </div>
         </el-card>
-        
+
       </el-card>
-    </el-col> 
+    </el-col>
   </el-row>
-  
+
 </template>
 
 <script>
@@ -248,7 +248,7 @@
             isstriped:false,
             totalPrice:0
           }
-        }, 
+        },
         //切换手风琴列表
         activeNames: ['1'],
         activeTables:[0],
@@ -278,7 +278,7 @@
               unitPrice:"单价",
               total:"金额",
               cardNum:"卡数",
-      
+
             },
             proDetail:{
               name:"项目名称",
@@ -287,8 +287,8 @@
               count:"数量",
               unitPrice:"单价",
               total:"金额",
-           
-            }  
+
+            }
           },
           "offerData1":{
             summary:{
@@ -320,13 +320,13 @@
               total:"金额",
               cardNum:"卡数",
               comments:"备注"
-            } 
+            }
           }
         },
         // 表格数据
         allData:{
           "offerData":{
-            summary:{ 
+            summary:{
               title:"报价汇总",
               data:[
                 {
@@ -391,7 +391,7 @@
                 }
               ]
             },
-            offerDetail:{ 
+            offerDetail:{
               title:"报价明细",
               data:[
                 {
@@ -402,7 +402,7 @@
                   unitPrice:"145",
                   total:"",
                   cardNum:5
-                
+
                 },
                 {
                   name:"柜体2",
@@ -412,7 +412,7 @@
                   unitPrice:"522",
                   total:"",
                   cardNum:5
-                 
+
                 },
                 {
                   name:"柜体3",
@@ -422,7 +422,7 @@
                   unitPrice:"142",
                   total:"",
                   cardNum:5
-                 
+
                 },
                 {
                   name:"柜体4",
@@ -432,7 +432,7 @@
                   unitPrice:"22",
                   total:"",
                   cardNum:5
-                
+
                 },
                 {
                   name:"柜体5",
@@ -442,7 +442,7 @@
                   unitPrice:"222",
                   total:"",
                   cardNum:5
-               
+
                 },
                 {
                   name:"柜体6",
@@ -452,11 +452,11 @@
                   unitPrice:"322",
                   total:"",
                   cardNum:5
-            
+
                 }
               ]
             },
-            proDetail:{ 
+            proDetail:{
               title:"产品明细",
               data:[
                 {
@@ -511,7 +511,7 @@
             }
           },
           "offerData1":{
-            summary:{ 
+            summary:{
               title:"报价汇总",
               data:[
                 {
@@ -576,7 +576,7 @@
                 }
               ]
             },
-            offerDetail:{ 
+            offerDetail:{
               title:"报价明细",
               data:[
                 {
@@ -641,7 +641,7 @@
                 }
               ]
             },
-            proDetail:{ 
+            proDetail:{
               title:"产品明细",
               data:[
                 {
@@ -800,7 +800,7 @@
           'offerData':{
             value: 'offerData',
             label: '报价明细单'
-          }, 
+          },
           'offerData1':{
             value: 'offerData1',
             label: '报价明细单1'
@@ -819,18 +819,18 @@
         cloneHead:{},//克隆的表头
         tableType:{}, //表种类
         showTable:{summary:"报价汇总"},
-        selectAllData:null, //当前选中的表 
+        selectAllData:null, //当前选中的表
         selectTable:""
       };
     },
     methods: {
       // 选择表格
-      onTableSelect(){ 
+      onTableSelect(){
         this.settingPanelTitle=this.options[this.value]['label'];
       },
       //选择表头项
       onTheadSelect(){
-      
+
         //被选中的表项
         this.selectedIndex=this.settingData[this.value].headValue;
       },
@@ -844,9 +844,9 @@
         for(let data of allData){
           selectedData.push(data[index]);
         }
- 
+
         return selectedData;
-        
+
       },
       // 筛选高亮方法
       showRules(index,refValueBig,gtBGColor,refValueSm,ltBGColor){
@@ -858,22 +858,22 @@
         let n=Object.keys(this.showTable).indexOf(this.selectTable);
         //给选中列添加规则样式
         for(let i in selectedData){
-          
+
           if(parseFloat(selectedData[i])>refValueBig && refValueBig !==0){
-            
+
             this.$refs.tbody[n].rows[i].cells[colIndex].style.backgroundColor=gtBGColor;
-          } 
-          
+          }
+
           if(parseFloat(selectedData[i])<refValueSm && refValueSm !==0){
-            
+
             this.$refs.tbody[n].rows[i].cells[colIndex].style.backgroundColor=ltBGColor;
           }
         }
-        
+
       },
       addShowRules(){
         //添加规则
-        this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor,this.ltRefValue,this.settingData[this.value].ltBGColor); 
+        this.showRules(this.selectedIndex,this.gtRefValue,this.settingData[this.value].gtBGColor,this.ltRefValue,this.settingData[this.value].ltBGColor);
       },
       //添加自定义统计
       addCaclCol(){
@@ -913,35 +913,35 @@
       },
       //新增列
       addCol(colName){
-        
+
           let key='newCol'+ this.col++;
           let allData=this.allData[this.value][this.selectTable].data;
           let headata=this.headerData[this.value][this.selectTable];
-          // console.log(key);
+          //
           if(!colName){
             if(this.selectedIndex){
-              
+
               colName=headata[this.selectedIndex];
-              
+
             }else{
               colName="新列";
             }
           }
-          
+
           this.$set(headata,key , colName)
-          
+
           if(this.selectedIndex){
-            
+
             //所选中的表项在第几列
             let colIndex=Object.keys(allData[0]).indexOf(this.selectedIndex);
             //获取列数据
             let selectedData=this.getColData(this.selectedIndex);
-            
+
             for(let index in allData){
-              
+
               this.$set(allData[index],key,selectedData[index])
             }
-            
+
           }else{
             for(let index in allData){
               this.$set(allData[index],key,"")
@@ -954,80 +954,78 @@
         this.$delete(this.headerData[this.value][this.selectTable],key);
         for(let data of allData){
           this.$delete(data,key);
-        } 
+        }
       },
-      
       // 拖拽列函数
       dragCol(){
         // 获取th集合
-        
         if(this.$refs.tHead){
           for(let el of this.$refs.tHead){
-         
+
             let ths=el.querySelectorAll("th");
             // 阻止拖拽的默认行为
             el.ondragover=function(e){
-              // console.log(el,"dragover");
+              //
               e.preventDefault();
             }
             el.ondragstart=function(e){
-              // console.log("start");
+              //
               //储存所拿起的th元素下标
               e.dataTransfer.setData("obj_add",e.target.cellIndex);
             }
             // 放置元素事件
             el.addEventListener("drop",function(e){
-              e.preventDefault;    
-              var i = parseInt(e.dataTransfer.getData("obj_add"));//所拿起的th列下标  
-              // console.log(i);  
+              e.preventDefault;
+              var i = parseInt(e.dataTransfer.getData("obj_add"));//所拿起的th列下标
+              //
               var d = e.target.cellIndex;//被放入的列下标
 
-              var _t = e.target; //目前拿起的元素  
-              // console.log(_t);
+              var _t = e.target; //目前拿起的元素
+              //
               for(var th of ths){
-                  //要被交换位置的元素th  
-                  if(th.cellIndex == i && e.target.parentNode.nodeName=="TR"){   
+                  //要被交换位置的元素th
+                  if(th.cellIndex == i && e.target.parentNode.nodeName=="TR"){
                     //拿起元素和要被放置的元素下标一致，交换位置,判断往前还是往后
 
                     if(th.cellIndex>_t.cellIndex){
-                      // console.log(th);
-                      console.log(e.target);
+                      //
+
                       e.target.parentNode.insertBefore(th,_t);
                     }else{
                       e.target.parentNode.insertBefore(th,_t.nextElementSibling);
                     }
-                  }  
-              } 
+                  }
+              }
               let trs =el.parentNode.querySelectorAll("tbody>tr");
-              // console.log(trs);
+              //
               for(let tr of trs){
 
                 let drag=""; //拿起的td
                 let drop=""; //放下的td
                 let tds=tr.children;
 
-                // console.log(tds);
+                //
                 for(let td of tds){
-                  
-                  if(td.cellIndex == i){ 
-                      // console.log(td); 
-                      drag = td;  
-                  }  
-                  if(td.cellIndex == d){ 
-                      // console.log(td);  
-                      drop = td;  
-                  } 
-                  
-                }
-                if(drag != undefined && drop != undefined && drag != "" && drop != ""){  
-                  // console.log(drag.parentNode);
-                  if(drag.cellIndex>drop.cellIndex){
-                    drag.parentNode.insertBefore(drag,drop); 
-                  }else{
-                    drag.parentNode.insertBefore(drag,drop.nextElementSibling); 
+
+                  if(td.cellIndex == i){
+                      //
+                      drag = td;
                   }
-                  
-                } 
+                  if(td.cellIndex == d){
+                      //
+                      drop = td;
+                  }
+
+                }
+                if(drag != undefined && drop != undefined && drag != "" && drop != ""){
+                  //
+                  if(drag.cellIndex>drop.cellIndex){
+                    drag.parentNode.insertBefore(drag,drop);
+                  }else{
+                    drag.parentNode.insertBefore(drag,drop.nextElementSibling);
+                  }
+
+                }
               }
             },false)
           }
@@ -1035,15 +1033,12 @@
       },
       //双击编辑事件
       editItem(i){
-        
         this.pageHead[this.value][i].isEdit= !this.pageHead[this.value][i].isEdit;
       },
       //增加页头项
       addHeadItem(){
-        
         this.pageHead[this.value].push({name:"新项:",isEdit:false});
         this.pageHeadContent[this.value].push({name:""});
-        
       },
       // 删除页头项
       delItem(i){
@@ -1052,7 +1047,7 @@
       // 计算总额
       caclTotal(){
         for(let key in this.allData){
-     
+
           for(let data of this.allData[key].summary.data){
             data.total=data.unitPrice*data.count;
             this.settingData[key].totalPrice+=parseFloat(data.total);
@@ -1061,57 +1056,57 @@
       },
       //拖动改变表格宽度
       changeColWidth(){
-        let tTD={}; //用来存储当前更改宽度的Table Cell   
+        let tTD={}; //用来存储当前更改宽度的Table Cell
         let tables = this.$refs.content;
         for(let table of tables){
           if(!table){
             table=document.getElementById("mainTable");
           }
-          // console.log(table);
+          //
           //因为与拖拽的事件冲突，改变宽度目标元素放在tbody行上
-          let tr=table.rows[1];  
-          for (let j = 0; j < tr.cells.length; j++) {  
-          
-            tr.cells[j].onmousedown = function () {   
-              //记录单元格  
-              tTD = this;   
-              if (event.offsetX > tTD.offsetWidth - 10) {   
-                tTD.mouseDown = true;   
-                tTD.oldX = event.x;   
-                tTD.oldWidth = tTD.offsetWidth;   
-              }    
-            };   
-            tr.cells[j].onmouseup = function () {   
-              //结束宽度调整   
-              if (tTD == undefined) tTD = this;   
-              tTD.mouseDown = false;   
-              tTD.style.cursor = 'default';   
-            };   
-            tr.cells[j].onmousemove = function () {   
-              //更改鼠标样式   
-              if (event.offsetX > this.offsetWidth - 10)   
-                this.style.cursor = 'col-resize';   
-              else   
-                this.style.cursor = 'default';   
-              //取出暂存的Table Cell   
-              if (tTD == undefined) tTD = this;   
-              //调整宽度   
-              if (tTD.mouseDown) {   
-                tTD.style.cursor = 'default';   
-                if (tTD.oldWidth + (event.x - tTD.oldX)>0)  
-                  tTD.width = tTD.oldWidth + (event.x - tTD.oldX);   
-                //调整列宽   
-                tTD.style.width = tTD.width;   
-                tTD.style.cursor = 'col-resize';   
-                //调整该列中的每个Cell 
-                for (j = 0; j < table.rows.length-1; j++) {  
-                  table.rows[j].cells[tTD.cellIndex].width = tTD.width;   
-                }   
-                
-              }   
-            };   
-          } 
-        }  
+          let tr=table.rows[1];
+          for (let j = 0; j < tr.cells.length; j++) {
+
+            tr.cells[j].onmousedown = function () {
+              //记录单元格
+              tTD = this;
+              if (event.offsetX > tTD.offsetWidth - 10) {
+                tTD.mouseDown = true;
+                tTD.oldX = event.x;
+                tTD.oldWidth = tTD.offsetWidth;
+              }
+            };
+            tr.cells[j].onmouseup = function () {
+              //结束宽度调整
+              if (tTD == undefined) tTD = this;
+              tTD.mouseDown = false;
+              tTD.style.cursor = 'default';
+            };
+            tr.cells[j].onmousemove = function () {
+              //更改鼠标样式
+              if (event.offsetX > this.offsetWidth - 10)
+                this.style.cursor = 'col-resize';
+              else
+                this.style.cursor = 'default';
+              //取出暂存的Table Cell
+              if (tTD == undefined) tTD = this;
+              //调整宽度
+              if (tTD.mouseDown) {
+                tTD.style.cursor = 'default';
+                if (tTD.oldWidth + (event.x - tTD.oldX)>0)
+                  tTD.width = tTD.oldWidth + (event.x - tTD.oldX);
+                //调整列宽
+                tTD.style.width = tTD.width;
+                tTD.style.cursor = 'col-resize';
+                //调整该列中的每个Cell
+                for (j = 0; j < table.rows.length-1; j++) {
+                  table.rows[j].cells[tTD.cellIndex].width = tTD.width;
+                }
+
+              }
+            };
+          }
+        }
       },
       // 导出功能
       downloadFile(rs) { // 点击导出按钮
@@ -1121,31 +1116,31 @@
         rs.push({title:this.settingPanelTitle});
 
         //2.拼接表头内容
-        
+
         let headContent={};
         //页头项
         let pHead=this.pageHead[this.value];
         //页头项对应的内容
         let pHeadContent=this.pageHeadContent[this.value];
 
-        for(let i in pHead){  
+        for(let i in pHead){
           if(i %3==0){
             rs.push(headContent);
             headContent={};
-          } 
+          }
           headContent[i]=pHead[i].name+""+pHeadContent[i].name;
-          
+
         }
-        // console.log(headContent);
+        //
         rs.push(headContent);
         rs.push({});//excle表格换行
-        
+
         for(let index in this.showTable){
         //3.拼接表头标题
           let title={};
           title[index]=this.showTable[index];
           rs.push({}); //excle表格换行
-          rs.push(title); 
+          rs.push(title);
           rs.push(this.headerData[this.value][index]);
 
           //4.拼接表内容
@@ -1155,21 +1150,21 @@
         rs.push({title:"合计",value:this.settingData[this.value].totalPrice});
         // 6.拼接页尾
         let pageFoot={};
-        
+
         for(let index in this.pageFootContent){
           pageFoot[index]=this.pageFootContent[index].title+this.pageFootContent[index].value;
         }
         rs.push(pageFoot);
-        
+
         this.downloadExl(rs, this.settingPanelTitle)
       },
       downloadExl(json, downName, type) {  // 导出到excel
-        
+
         let tmpdata = [] // 用来保存转换好的json
         const wopts = { bookType: 'xlsx', bookSST: true, type: 'binary', cellStyles: true };
         let maxLen=0; //最长的一行
 
-        var ws = { };  
+        var ws = { };
         ws['!cols']= [];
         json.map((v, i) => {
           if(maxLen<Object.keys(v).length){
@@ -1180,43 +1175,43 @@
             return Object.assign({}, { //拼接输出的sheet
               v: v[k],
               position: (j > 25 ? this.getCharCol(j) : String.fromCharCode(65 + j)) + (i + 1),
-               
+
             })}
           )
         }).reduce((prev, next) =>  prev.concat(next)).forEach(function (v) {
           var cell={ //转换输出json
             v: v.v
           }
-          if ( typeof cell.v === 'number')  
-               cell.t = 'n';  
-            else if ( typeof cell.v === 'boolean')  
-                cell.t = 'b';  
-            else if (cell.v instanceof Date) {  
-                cell.t = 'n';  
-                cell.z = XLSX.SSF._table[14];  
-                cell.v = datenum(cell.v);  
-            } else  
+          if ( typeof cell.v === 'number')
+               cell.t = 'n';
+            else if ( typeof cell.v === 'boolean')
+                cell.t = 'b';
+            else if (cell.v instanceof Date) {
+                cell.t = 'n';
+                cell.z = XLSX.SSF._table[14];
+                cell.v = datenum(cell.v);
+            } else
                 cell.t = 's';
           tmpdata[v.position] = cell;
-          
+
         })
-        // console.log(tmpdata);
+        //
         let outputPos = Object.keys(tmpdata) ; // 设置区域,比如表格从A1到D10
-        // console.log( tmpdata["A8"]);
+        //
         tmpdata["A8"].s = { font: { sz: 14, bold: true, color: { rgb: "FFFFAA00" } }, fill: { bgColor: { indexed: 64 }, fgColor: { rgb: "FFFF00" } } };//<====设置xlsx单元格样式
         tmpdata["!merges"] = [{
                 s: { c: 0, r: 0 },
                 e: { c: 4, r: 0 }
-            }];//<====合并单元格 
-        for(var n = 0; n != maxLen; ++n){  
-          ws['!cols'].push({  
-            wpx: 170  
-          });  
+            }];//<====合并单元格
+        for(var n = 0; n != maxLen; ++n){
+          ws['!cols'].push({
+            wpx: 170
+          });
         }
         // 转化最长的行所对应的区域码
         maxLen=this.getCharCol(maxLen);
-        
-        // console.log(maxLen+outputPos[outputPos.length-1].slice(1));
+
+        //
         let tmpWB = {
           SheetNames: ['mySheet'], // 保存的表标题
           Sheets: {
@@ -1229,7 +1224,7 @@
               })
           }
         }
-        
+
         let tmpDown = new Blob([this.s2ab(XLSX.write(tmpWB,
           {cellStyles: true,bookType: (type === undefined ? 'xlsx' : type), bookSST: false, type: 'binary'} // 这里的数据是用来定义导出的格式类型
         ))], {
@@ -1242,23 +1237,23 @@
         setTimeout(function () {  // 延时释放
           URL.revokeObjectURL(tmpDown) // 用URL.revokeObjectURL()来释放这个object URL
         }, 100)
-     
+
       },
       // 转2进制
       s2ab(s){
         if(typeof ArrayBuffer !== 'undefined'){
           let buf =new ArrayBuffer(s.length);
           let view =new Uint8Array(buf);
-          for(var i=0;i!=s.length;++i) view[i] =s.charCodeAt(i) & 0xFF;  
-          return buf;      
+          for(var i=0;i!=s.length;++i) view[i] =s.charCodeAt(i) & 0xFF;
+          return buf;
         }else{
           let buf= new Array(s.length);
           for(var i=0;i!=s.length;++i) buf[i] =s.charCodeAt(i) & 0xFF;
           return buf;
-        } 
+        }
       },
       // 将指定的自然数转换为26进制表示。映射关系：[0-25] -> [A-Z]。
-      getCharCol(n) { 
+      getCharCol(n) {
         let s = ''
         let m = 0
         while (n > 0) {
@@ -1270,22 +1265,22 @@
       },
       //由表头的value获取key
       getHeadKey(key){
- 
+
         // 交换key和value位置后的新对象
         let newHead={};
         let headerData=this.cloneHead[this.value]
         for(let i in headerData){
-          // console.log(i,headerData[i]);
+          //
           newHead[headerData[i]]=i;
         }
-        // console.log(newHead);
+        //
         return newHead[key];
       },
       // 获取表格类型数据
       getTableType(){
         this.tableType={};
         let allData=this.allData[this.value];
-        
+
         for (let index in allData){
           let tmpObj={};
           this.tableType[index]=allData[index].title;
@@ -1298,31 +1293,31 @@
         }
       },
       delTable(key){
-        // console.log(key);
+        //
         this.$delete(this.showTable,key);
       },
       //拖拽设置面板
       dragSettingPanel(){
-        // console.log()
+        //
         //获得设置面板对象
         let Panels=document.querySelectorAll(".el-collapse");
-        // console.log(setPanel)
+        //
         // 拿起的元素
         let dragElem={};
-        // console.log(setPanel)
+        //
         Panels.forEach((item)=>{
           //消除拖拽默认行为
           item.ondragover=function(e){
-            // console.log("dragover")
+            //
             e.preventDefault();
           }
           item.ondragstart=function(e){
-            // console.log("start");
+            //
             //储存所拿起的元素
             if(e.target.nodeName == "TH"){
               return;
             }
-            
+
             dragElem=e.target;
           }
           item.ondrop=function(e){
@@ -1332,11 +1327,11 @@
             while(dropElem.className != "el-collapse-item" && dropElem.className != "el-collapse-item is-active"){
               dropElem=dropElem.parentNode;
             }
-            // console.log(dropElem); 
+            //
             this.insertBefore(dragElem,dropElem);
           }
         })
-        
+
       }
     },
     mounted(){
@@ -1354,9 +1349,9 @@
       this.dragCol();
       //改变表头宽度
       this.changeColWidth();
-  
+
     }
-    
+
   }
 </script>
 
@@ -1373,7 +1368,7 @@
   table{
     table-layout: fixed;
     width:100%;
-    margin-top:2.5rem; 
+    margin-top:2.5rem;
   }
   table th{
     height:4rem;
@@ -1388,13 +1383,13 @@
     width:25%;
   }
   #out-table{
-    margin-top:5rem; 
+    margin-top:5rem;
   }
 /* 表格样式 end */
 /* 表头定制项样式 start*/
   #out-table .pageHeader li{
     width: 30%;
-    margin-top:2rem; 
+    margin-top:2rem;
     position: relative;
   }
   #out-table .pageItem li .close {
@@ -1409,7 +1404,7 @@
   #setting label{
     font-size: 1.45rem;
     font-weight: normal;
-    margin-right:2rem; 
+    margin-right:2rem;
     vertical-align: sub;
   }
   #setting div{
